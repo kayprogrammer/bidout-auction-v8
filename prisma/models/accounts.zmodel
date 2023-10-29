@@ -1,0 +1,17 @@
+import "base"
+
+model User extends BaseModel {
+  firstName				  String      @length(max: 50, message: "50 characters max")	
+	lastName				  String      @length(max: 50, message: "50 characters max")	
+	email					    String		  @length(min: 5, message: "5 characters min")
+	password				  String		  
+	isEmailVerified		Boolean		  @default(false)
+	isSuperuser				Boolean		  @default(false)
+	isStaff					  Boolean		  @default(false)
+	termsAgreement		Boolean		  @default(false)
+	avatarId				  String		  
+	avatar					  File			  @relation(fields: [avatarId], references: [id])
+
+  // Not needed but compulsory according to design
+  reviews           Review[]
+}

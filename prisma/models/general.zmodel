@@ -1,0 +1,24 @@
+import "base"
+
+model SiteDetail extends BaseModel {
+    name 		String          @default("Kay's Auction House") 		
+	email 		String          @default("kayprogrammer1@gmail.com") 		
+	phone 		String          @default("+2348133831036")		
+	address 	String          @default("234, Lagos, Nigeria")
+	fb 			String          @default("https://facebook.com")		
+	tw 			String          @default("https://twitter.com")		
+	wh 			String          @default("https://wa.me/2348133831036")
+	ig 			String          @default("https://instagram.com")
+}
+
+model Subscriber extends BaseModel {
+	email		String	
+	exported	Boolean		@default(false)
+}
+
+model Review extends BaseModel {
+    reviewerId			String		
+	reviewer			User		@relation(fields: [reviewerId], references: [id])
+	show				Boolean		@default(false)
+	text				String		@length(max: 200, message: "200 characters max")
+}
