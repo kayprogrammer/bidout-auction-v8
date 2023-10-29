@@ -23,9 +23,9 @@ serv:
 
 mmig: # run with "make mmig" or "make mmig message='migration message'"
 	if [ -z "$(message)" ]; then \
-		alembic revision --autogenerate; \
+		npx prisma migrate; \
 	else \
-		alembic revision --autogenerate -m "$(message)"; \
+		npx prisma migrate --name "$(message)"; \
 	fi
 	
 mig:

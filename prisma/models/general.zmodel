@@ -1,6 +1,8 @@
 import "base"
 
 model SiteDetail extends BaseModel {
+    @@map("site_details")
+
     name 		String          @default("Kay's Auction House") 		
 	email 		String          @default("kayprogrammer1@gmail.com") 		
 	phone 		String          @default("+2348133831036")		
@@ -12,12 +14,16 @@ model SiteDetail extends BaseModel {
 }
 
 model Subscriber extends BaseModel {
+    @@map("subscribers")
+
 	email		String	
 	exported	Boolean		@default(false)
 }
 
 model Review extends BaseModel {
-    reviewerId			String		
+    @@map("reviews")
+
+    reviewerId			String	    @map(name: "reviewer_id")
 	reviewer			User		@relation(fields: [reviewerId], references: [id])
 	show				Boolean		@default(false)
 	text				String		@length(max: 200, message: "200 characters max")

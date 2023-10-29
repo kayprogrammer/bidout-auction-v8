@@ -1,17 +1,26 @@
 import "base"
 
 model User extends BaseModel {
-  firstName				  String      @length(max: 50, message: "50 characters max")	
-	lastName				  String      @length(max: 50, message: "50 characters max")	
+  @@map("users")
+
+  firstName				  String      @map(name: "first_name") @length(max: 50, message: "50 characters max")	
+	lastName				  String      @map(name: "last_name") @length(max: 50, message: "50 characters max")	
 	email					    String		  @length(min: 5, message: "5 characters min")
 	password				  String		  
-	isEmailVerified		Boolean		  @default(false)
-	isSuperuser				Boolean		  @default(false)
-	isStaff					  Boolean		  @default(false)
-	termsAgreement		Boolean		  @default(false)
-	avatarId				  String		  
+	isEmailVerified		Boolean		  @map(name: "is_email_verified")  @default(false)
+	isSuperuser				Boolean		  @map(name: "is_superuser")       @default(false)
+	isStaff					  Boolean		  @map(name: "is_staff")           @default(false)
+	termsAgreement		Boolean		  @map(name: "terms_agreement")    @default(false)
+	avatarId				  String		  @map(name: "avatar_id")
 	avatar					  File			  @relation(fields: [avatarId], references: [id])
+
+  @@unique([email])
 
   // Not needed but compulsory according to design
   reviews           Review[]
+}
+
+model GuestUser extends BaseModel {
+  @@map("guest_users")
+
 }
