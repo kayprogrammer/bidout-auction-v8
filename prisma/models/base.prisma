@@ -1,0 +1,5 @@
+model BaseModel {
+  id            String       @id @default(uuid())              // Use a UUID data type for the ID
+  createdAt     DateTime     @default(now())                  // Automatically set the creation timestamp
+  updatedAt     DateTime     @updatedAt                      // Automatically set the update timestamp
+}
