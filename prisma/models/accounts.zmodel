@@ -3,7 +3,7 @@ import "base"
 model User extends BaseModel {
   @@map("users")
 
-  firstName				  String      @map(name: "first_name") @length(max: 50, message: "50 characters max")	
+  	firstName				  String      @map(name: "first_name") @length(max: 50, message: "50 characters max")	
 	lastName				  String      @map(name: "last_name") @length(max: 50, message: "50 characters max")	
 	email					    String		  @length(min: 5, message: "5 characters min")
 	password				  String		  

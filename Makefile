@@ -23,13 +23,13 @@ serv:
 
 mmig: # run with "make mmig" or "make mmig message='migration message'"
 	if [ -z "$(message)" ]; then \
-		npx prisma migrate; \
+		npx zenstack generate; \
 	else \
 		npx prisma migrate --name "$(message)"; \
 	fi
 	
 mig:
-	alembic upgrade heads
+	npx prisma db push
 
 initial_data:
 	python initials/initial_data.py
