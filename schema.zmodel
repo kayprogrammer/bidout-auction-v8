@@ -1,3 +1,7 @@
+import "./prisma/models/accounts"
+import "./prisma/models/general"
+import "./prisma/models/listings"
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -9,6 +13,3 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
-prisma "./prisma/models/accounts"
-import "./prisma/models/general"
