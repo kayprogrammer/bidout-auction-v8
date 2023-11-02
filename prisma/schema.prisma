@@ -33,6 +33,9 @@ model User {
     refresh String
     reviews Review[]
     user Otp?
+    listings Listing[]
+    bids Bid[]
+    watchlists Watchlist[]
 
     @@map("users")
     @@unique([email])
@@ -42,6 +45,7 @@ model GuestUser {
     id String @id() @db.Uuid() @unique() @default(uuid())
     createdAt DateTime @map(name: "created_at") @default(now())
     updatedAt DateTime @map(name: "updated_at") @updatedAt()
+    watchlists Watchlist[]
 
     @@map("guest_users")
 }
@@ -63,8 +67,77 @@ model File {
     updatedAt DateTime @map(name: "updated_at") @updatedAt()
     resourceType String @map(name: "resource_type")
     users User[]
+    lisings Listing[]
 
     @@map("files")
+}
+
+model Category {
+    id String @id() @db.Uuid() @unique() @default(uuid())
+    createdAt DateTime @map(name: "created_at") @default(now())
+    updatedAt DateTime @map(name: "updated_at") @updatedAt()
+    /// @length(max: 30, message: '30 characters max')
+    name String @unique()
+    slug String @unique()
+    listings Listing[]
+
+    @@map("categories")
+}
+
+model Listing {
+    id String @id() @db.Uuid() @unique() @default(uuid())
+    createdAt DateTime @map(name: "created_at") @default(now())
+    updatedAt DateTime @map(name: "updated_at") @updatedAt()
+    auctioneerId String @db.Uuid() @map(name: "auctioneer_id")
+    auctioneer User @relation(fields: [auctioneerId], references: [id])
+    /// @length(max: 70, message: '70 characters max')
+    name String
+    slug String @unique()
+    desc String
+    categoryId String @db.Uuid() @map(name: "category_id")
+    category Category @relation(fields: [categoryId], references: [id])
+    price Decimal @db.Decimal(10, 2)
+    highestBid Decimal @map(name: "highest_bid") @db.Decimal(10, 2) @default(0.00)
+    bidsCount Int @map(name: "bids_count") @default(0)
+    closingDate DateTime @map(name: "closing_date")
+    active Boolean @default(true)
+    imageId String @db.Uuid() @map(name: "image_id")
+    image File @relation(fields: [imageId], references: [id])
+    watchlists Watchlist[]
+    bids Bid[]
+
+    @@map("listings")
+}
+
+model Bid {
+    id String @id() @db.Uuid() @unique() @default(uuid())
+    createdAt DateTime @map(name: "created_at") @default(now())
+    updatedAt DateTime @map(name: "updated_at") @updatedAt()
+    userId String @db.Uuid() @map(name: "user_id")
+    user User @relation(fields: [userId], references: [id])
+    listingId String @db.Uuid() @map(name: "listing_id")
+    listing Listing @relation(fields: [listingId], references: [id])
+    amount Decimal @db.Decimal(10, 2)
+
+    @@map("bids")
+    @@unique([listingId, amount], name: "unique_listing_amount_bids")
+    @@unique([userId, listingId], name: "unique_user_listing_bids")
+}
+
+model Watchlist {
+    id String @id() @db.Uuid() @unique() @default(uuid())
+    createdAt DateTime @map(name: "created_at") @default(now())
+    updatedAt DateTime @map(name: "updated_at") @updatedAt()
+    userId String @db.Uuid() @map(name: "user_id")
+    user User @relation(fields: [userId], references: [id])
+    listingId String @db.Uuid() @map(name: "listing_id")
+    listing Listing @relation(fields: [listingId], references: [id])
+    sessionKey String @db.Uuid() @map(name: "session_key")
+    guest GuestUser @relation(fields: [sessionKey], references: [id])
+
+    @@map("watchlists")
+    @@unique([userId, listingId], name: "unique_user_listing_watchlists")
+    @@unique([sessionKey, listingId], name: "unique_session_key_listing_watchlists")
 }
 
 model SiteDetail {

@@ -1,4 +1,5 @@
 import "accounts"
+import "listings"
 
 abstract model BaseModel {
   id            String       @id @db.Uuid @unique @default(uuid())                             // Use a UUID data type for the ID
@@ -12,5 +13,6 @@ model File extends BaseModel {
   resourceType  String       @map(name: "resource_type")
 
   // Not needed but compulsory according to design
-  users  User[]
+  users   User[]
+  lisings Listing[]
 }

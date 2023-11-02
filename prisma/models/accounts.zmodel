@@ -22,11 +22,16 @@ model User extends BaseModel {
   // Not needed but compulsory according to design
   reviews           Review[]
   user				Otp?
+  listings			Listing[]
+  bids				Bid[]
+  watchlists		Watchlist[]
 }
 
 model GuestUser extends BaseModel {
   @@map("guest_users")
 
+  // Not needed but compulsory according to design
+  watchlists		Watchlist[]
 }
 
 model Otp extends BaseModel {
