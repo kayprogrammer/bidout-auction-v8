@@ -3,7 +3,7 @@ import "base"
 model Category extends BaseModel {
   @@map("categories")
 
-  	name				  String      @unique @length(max: 30, message: "30 characters max")	
+  name				  String      @unique @length(max: 30, message: "30 characters max")	
 	slug				  String      @unique 
 
   // Not needed but compulsory according to design
@@ -12,13 +12,14 @@ model Category extends BaseModel {
 
 model Listing extends BaseModel {
   @@map("listings")
+
   auctioneerId		String	    @db.Uuid @map(name: "auctioneer_id")
   auctioneer		User		@relation(fields: [auctioneerId], references: [id])
   name              String      @length(max: 70, message: "70 characters max")
   slug				  String      @unique 
   desc              String     
-  categoryId		String	    @db.Uuid @map(name: "category_id")
-  category		    Category		@relation(fields: [categoryId], references: [id])
+  categoryId		String?	    @db.Uuid @map(name: "category_id")
+  category		    Category?		@relation(fields: [categoryId], references: [id])
   price             Decimal     @db.Decimal(10, 2) 
   highestBid        Decimal     @map(name: "highest_bid") @db.Decimal(10, 2) @default(0.00)
   bidsCount         Int         @map(name: "bids_count") @default(0)
@@ -49,12 +50,12 @@ model Bid extends BaseModel {
 model Watchlist extends BaseModel {
   @@map("watchlists")
 
-  userId 	    String		@db.Uuid @map(name: "user_id")
-  user 		    User 		@relation(fields: [userId], references: [id])
+  userId 	    String?		@db.Uuid @map(name: "user_id")
+  user 		    User? 		@relation(fields: [userId], references: [id])
   listingId     String		@db.Uuid @map(name: "listing_id")
   listing 		Listing 	@relation(fields: [listingId], references: [id])
-  sessionKey 	String		@db.Uuid @map(name: "session_key")
-  guest 		GuestUser 	@relation(fields: [sessionKey], references: [id])
+  sessionKey 	String?		@db.Uuid @map(name: "session_key")
+  guest 		GuestUser? 	@relation(fields: [sessionKey], references: [id])
 
   @@unique([userId, listingId], name: "unique_user_listing_watchlists")
   @@unique([sessionKey, listingId], name: "unique_session_key_listing_watchlists")

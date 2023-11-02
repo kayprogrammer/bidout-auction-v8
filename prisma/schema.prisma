@@ -22,15 +22,17 @@ model User {
     lastName String @map(name: "last_name")
     /// @length(min: 5, message: '5 characters min')
     email String
+    /// @length(min: 8, message: '8 characters min')
+    /// @length(max: 20, message: '20 characters max')
     password String
     isEmailVerified Boolean @map(name: "is_email_verified") @default(false)
     isSuperuser Boolean @map(name: "is_superuser") @default(false)
     isStaff Boolean @map(name: "is_staff") @default(false)
     termsAgreement Boolean @map(name: "terms_agreement") @default(false)
-    avatarId String @db.Uuid() @map(name: "avatar_id")
-    avatar File @relation(fields: [avatarId], references: [id])
-    access String
-    refresh String
+    avatarId String? @db.Uuid() @map(name: "avatar_id")
+    avatar File? @relation(fields: [avatarId], references: [id])
+    access String?
+    refresh String?
     reviews Review[]
     user Otp?
     listings Listing[]
@@ -94,8 +96,8 @@ model Listing {
     name String
     slug String @unique()
     desc String
-    categoryId String @db.Uuid() @map(name: "category_id")
-    category Category @relation(fields: [categoryId], references: [id])
+    categoryId String? @db.Uuid() @map(name: "category_id")
+    category Category? @relation(fields: [categoryId], references: [id])
     price Decimal @db.Decimal(10, 2)
     highestBid Decimal @map(name: "highest_bid") @db.Decimal(10, 2) @default(0.00)
     bidsCount Int @map(name: "bids_count") @default(0)
@@ -128,12 +130,12 @@ model Watchlist {
     id String @id() @db.Uuid() @unique() @default(uuid())
     createdAt DateTime @map(name: "created_at") @default(now())
     updatedAt DateTime @map(name: "updated_at") @updatedAt()
-    userId String @db.Uuid() @map(name: "user_id")
-    user User @relation(fields: [userId], references: [id])
+    userId String? @db.Uuid() @map(name: "user_id")
+    user User? @relation(fields: [userId], references: [id])
     listingId String @db.Uuid() @map(name: "listing_id")
     listing Listing @relation(fields: [listingId], references: [id])
-    sessionKey String @db.Uuid() @map(name: "session_key")
-    guest GuestUser @relation(fields: [sessionKey], references: [id])
+    sessionKey String? @db.Uuid() @map(name: "session_key")
+    guest GuestUser? @relation(fields: [sessionKey], references: [id])
 
     @@map("watchlists")
     @@unique([userId, listingId], name: "unique_user_listing_watchlists")
