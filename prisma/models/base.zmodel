@@ -1,7 +1,7 @@
 import "accounts"
 
 abstract model BaseModel {
-  id            String       @id @unique @default(uuid())                             // Use a UUID data type for the ID
+  id            String       @id @db.Uuid @unique @default(uuid())                             // Use a UUID data type for the ID
   createdAt     DateTime     @map(name: "created_at") @default(now())                 // Automatically set the creation timestamp
   updatedAt     DateTime     @map(name: "updated_at") @updatedAt                      // Automatically set the update timestamp
 }

@@ -23,7 +23,7 @@ model Subscriber extends BaseModel {
 model Review extends BaseModel {
     @@map("reviews")
 
-    reviewerId			String	    @map(name: "reviewer_id")
+    reviewerId			String	    @db.Uuid @map(name: "reviewer_id")
 	reviewer			User		@relation(fields: [reviewerId], references: [id])
 	show				Boolean		@default(false)
 	text				String		@length(max: 200, message: "200 characters max")

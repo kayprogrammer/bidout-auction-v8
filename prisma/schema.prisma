@@ -13,7 +13,7 @@ generator client {
 }
 
 model User {
-    id String @id() @unique() @default(uuid())
+    id String @id() @db.Uuid() @unique() @default(uuid())
     createdAt DateTime @map(name: "created_at") @default(now())
     updatedAt DateTime @map(name: "updated_at") @updatedAt()
     /// @length(max: 50, message: '50 characters max')
@@ -27,24 +27,38 @@ model User {
     isSuperuser Boolean @map(name: "is_superuser") @default(false)
     isStaff Boolean @map(name: "is_staff") @default(false)
     termsAgreement Boolean @map(name: "terms_agreement") @default(false)
-    avatarId String @map(name: "avatar_id")
+    avatarId String @db.Uuid() @map(name: "avatar_id")
     avatar File @relation(fields: [avatarId], references: [id])
+    access String
+    refresh String
     reviews Review[]
+    user Otp?
 
     @@map("users")
     @@unique([email])
 }
 
 model GuestUser {
-    id String @id() @unique() @default(uuid())
+    id String @id() @db.Uuid() @unique() @default(uuid())
     createdAt DateTime @map(name: "created_at") @default(now())
     updatedAt DateTime @map(name: "updated_at") @updatedAt()
 
     @@map("guest_users")
 }
 
+model Otp {
+    id String @id() @db.Uuid() @unique() @default(uuid())
+    createdAt DateTime @map(name: "created_at") @default(now())
+    updatedAt DateTime @map(name: "updated_at") @updatedAt()
+    userId String @db.Uuid() @unique() @map(name: "user_id")
+    user User @relation(fields: [userId], references: [id])
+    code Int
+
+    @@map("otps")
+}
+
 model File {
-    id String @id() @unique() @default(uuid())
+    id String @id() @db.Uuid() @unique() @default(uuid())
     createdAt DateTime @map(name: "created_at") @default(now())
     updatedAt DateTime @map(name: "updated_at") @updatedAt()
     resourceType String @map(name: "resource_type")
@@ -54,7 +68,7 @@ model File {
 }
 
 model SiteDetail {
-    id String @id() @unique() @default(uuid())
+    id String @id() @db.Uuid() @unique() @default(uuid())
     createdAt DateTime @map(name: "created_at") @default(now())
     updatedAt DateTime @map(name: "updated_at") @updatedAt()
     name String @default("Kay's Auction House")
@@ -70,7 +84,7 @@ model SiteDetail {
 }
 
 model Subscriber {
-    id String @id() @unique() @default(uuid())
+    id String @id() @db.Uuid() @unique() @default(uuid())
     createdAt DateTime @map(name: "created_at") @default(now())
     updatedAt DateTime @map(name: "updated_at") @updatedAt()
     email String
@@ -80,10 +94,10 @@ model Subscriber {
 }
 
 model Review {
-    id String @id() @unique() @default(uuid())
+    id String @id() @db.Uuid() @unique() @default(uuid())
     createdAt DateTime @map(name: "created_at") @default(now())
     updatedAt DateTime @map(name: "updated_at") @updatedAt()
-    reviewerId String @map(name: "reviewer_id")
+    reviewerId String @db.Uuid() @map(name: "reviewer_id")
     reviewer User @relation(fields: [reviewerId], references: [id])
     show Boolean @default(false)
     /// @length(max: 200, message: '200 characters max')
