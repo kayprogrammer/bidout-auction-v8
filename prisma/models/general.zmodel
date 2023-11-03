@@ -11,6 +11,7 @@ model SiteDetail extends BaseModel {
 	tw 			String          @default("https://twitter.com")		
 	wh 			String          @default("https://wa.me/2348133831036")
 	ig 			String          @default("https://instagram.com")
+
 }
 
 model Subscriber extends BaseModel {

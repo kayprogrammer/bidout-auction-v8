@@ -1,18 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
-import { Review, SiteDetail, Subscriber } from '@prisma/client';
+import { Prisma, Review, Subscriber } from '@prisma/client';
+import { excludeFields } from './utils';
+import { SiteDetailSchema } from 'src/schemas/general';
 
 
 @Injectable()
 export class SiteDetailService {
     constructor(private prisma: PrismaService) { }
 
-    async get(): Promise<SiteDetail> {
-        var siteDetail: Promise<SiteDetail | null> = this.prisma.siteDetail.findFirst();
+    async get(): Promise<SiteDetailSchema> {
+        var siteDetail: SiteDetailSchema | null = await this.prisma.siteDetail.findFirst({ select: excludeFields('SiteDetail', ["id", "createdAt", "updatedAt"]) });
         if (!siteDetail) {
-            siteDetail = this.prisma.siteDetail.create({ data: {} })
+            siteDetail = await this.prisma.siteDetail.create({ data: {} })
         }
-        return siteDetail as Promise<SiteDetail>
+
+        return siteDetail
 
     }
 }
@@ -21,11 +24,9 @@ export class SiteDetailService {
 export class SubscriberService {
     constructor(private prisma: PrismaService) { }
 
-    async get_by_email(email: string): Promise<Subscriber | null> {
-        return this.prisma.subscriber.findFirst({
-            where: {
-                email
-            }
+    async get_by_email(email: Prisma.SubscriberWhereUniqueInput): Promise<Subscriber | null> {
+        return this.prisma.subscriber.findUnique({
+            where: email
         });
     }
 }
