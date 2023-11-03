@@ -18,7 +18,7 @@ show-logs:
 	docker-compose logs
 
 serv:
-	npm run start
+	npm run start:dev
 
 
 mmig: # run with "make mmig" or "make mmig message='migration message'"
