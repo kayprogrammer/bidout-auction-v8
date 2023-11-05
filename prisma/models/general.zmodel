@@ -1,5 +1,4 @@
 import "base"
-@ApiProperty()
 model SiteDetail extends BaseModel {
     @@map("site_details")
 

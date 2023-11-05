@@ -1,8 +1,7 @@
-import { Body, Controller, Get, Logger, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { SiteDetailService, SubscriberService } from '../../prisma/services/general.service';
-import { SiteDetailResponseSchema, SiteDetailSchema, SubscriberResponseSchema, SubscriberSchema } from 'src/schemas/general';
-import { validate } from 'class-validator';
+import { SiteDetailResponseSchema, SubscriberResponseSchema, SubscriberSchema } from 'src/schemas/general';
 
 @Controller('api/v1/general')
 @ApiTags('General')
@@ -37,4 +36,5 @@ export class GeneralController {
     resp.data = subscriber
     return resp
   }
+  
 }

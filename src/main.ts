@@ -4,12 +4,14 @@ import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 import settings from './config/config';
 import { ValidationPipe } from '@nestjs/common';
+import { HttpExceptionFilter } from './exceptions.filter';
 declare const module: any;
 
 async function bootstrap() {
   dotenv.config();
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   const config = new DocumentBuilder()
     .setTitle(settings.projectName)
