@@ -30,7 +30,7 @@ model User {
     isStaff Boolean @map(name: "is_staff") @default(false)
     termsAgreement Boolean @map(name: "terms_agreement") @default(false)
     avatarId String? @db.Uuid() @map(name: "avatar_id")
-    avatar File? @relation(fields: [avatarId], references: [id])
+    avatar File? @relation(fields: [avatarId], references: [id], onDelete: SetNull)
     access String?
     refresh String?
     reviews Review[]
@@ -57,7 +57,7 @@ model Otp {
     createdAt DateTime @map(name: "created_at") @default(now())
     updatedAt DateTime @map(name: "updated_at") @updatedAt()
     userId String @db.Uuid() @unique() @map(name: "user_id")
-    user User @relation(fields: [userId], references: [id])
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
     code Int
 
     @@map("otps")
@@ -91,20 +91,20 @@ model Listing {
     createdAt DateTime @map(name: "created_at") @default(now())
     updatedAt DateTime @map(name: "updated_at") @updatedAt()
     auctioneerId String @db.Uuid() @map(name: "auctioneer_id")
-    auctioneer User @relation(fields: [auctioneerId], references: [id])
+    auctioneer User @relation(fields: [auctioneerId], references: [id], onDelete: Cascade)
     /// @length(max: 70, message: '70 characters max')
     name String
     slug String @unique()
     desc String
     categoryId String? @db.Uuid() @map(name: "category_id")
-    category Category? @relation(fields: [categoryId], references: [id])
+    category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
     price Decimal @db.Decimal(10, 2)
     highestBid Decimal @map(name: "highest_bid") @db.Decimal(10, 2) @default(0.00)
     bidsCount Int @map(name: "bids_count") @default(0)
     closingDate DateTime @map(name: "closing_date")
     active Boolean @default(true)
     imageId String @db.Uuid() @map(name: "image_id")
-    image File @relation(fields: [imageId], references: [id])
+    image File @relation(fields: [imageId], references: [id], onDelete: SetNull)
     watchlists Watchlist[]
     bids Bid[]
 
@@ -116,9 +116,9 @@ model Bid {
     createdAt DateTime @map(name: "created_at") @default(now())
     updatedAt DateTime @map(name: "updated_at") @updatedAt()
     userId String @db.Uuid() @map(name: "user_id")
-    user User @relation(fields: [userId], references: [id])
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
     listingId String @db.Uuid() @map(name: "listing_id")
-    listing Listing @relation(fields: [listingId], references: [id])
+    listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
     amount Decimal @db.Decimal(10, 2)
 
     @@map("bids")
@@ -131,11 +131,11 @@ model Watchlist {
     createdAt DateTime @map(name: "created_at") @default(now())
     updatedAt DateTime @map(name: "updated_at") @updatedAt()
     userId String? @db.Uuid() @map(name: "user_id")
-    user User? @relation(fields: [userId], references: [id])
+    user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
     listingId String @db.Uuid() @map(name: "listing_id")
-    listing Listing @relation(fields: [listingId], references: [id])
+    listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
     sessionKey String? @db.Uuid() @map(name: "session_key")
-    guest GuestUser? @relation(fields: [sessionKey], references: [id])
+    guest GuestUser? @relation(fields: [sessionKey], references: [id], onDelete: Cascade)
 
     @@map("watchlists")
     @@unique([userId, listingId], name: "unique_user_listing_watchlists")
@@ -173,7 +173,7 @@ model Review {
     createdAt DateTime @map(name: "created_at") @default(now())
     updatedAt DateTime @map(name: "updated_at") @updatedAt()
     reviewerId String @db.Uuid() @map(name: "reviewer_id")
-    reviewer User @relation(fields: [reviewerId], references: [id])
+    reviewer User @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
     show Boolean @default(false)
     /// @length(max: 200, message: '200 characters max')
     text String

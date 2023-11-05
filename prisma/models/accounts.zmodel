@@ -12,7 +12,7 @@ model User extends BaseModel {
 	isStaff					Boolean	  	  @map(name: "is_staff")           @default(false)
 	termsAgreement			Boolean		  @map(name: "terms_agreement")    @default(false)
 	avatarId				  String?	    @db.Uuid @map(name: "avatar_id")
-	avatar					  File?			  @relation(fields: [avatarId], references: [id])
+	avatar					  File?			  @relation(fields: [avatarId], references: [id], onDelete: SetNull)
 	// Tokens
 	access					String?
 	refresh					String?
@@ -38,6 +38,6 @@ model Otp extends BaseModel {
   @@map("otps")
 
   userId 	String		@db.Uuid @unique @map(name: "user_id")
-  user 		User 		@relation(fields: [userId], references: [id])
+  user 		User 		@relation(fields: [userId], references: [id], onDelete: Cascade)
   code		Int	
 }

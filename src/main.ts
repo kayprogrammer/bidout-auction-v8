@@ -29,7 +29,6 @@ async function bootstrap() {
     .setTitle(settings.projectName)
     .setDescription('A simple bidding API built with NestJS')
     .setVersion('8.0')
-    // .addTag('cats')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('', app, document);
