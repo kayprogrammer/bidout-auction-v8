@@ -3,14 +3,26 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 import settings from './config/config';
-import { ValidationPipe } from '@nestjs/common';
+import { UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './exceptions.filter';
 declare const module: any;
 
 async function bootstrap() {
   dotenv.config();
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
+
+  // Validation pipes to return the errors full detail
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      exceptionFactory: (errors) => {
+        return new UnprocessableEntityException({
+          message: 'Invalid Entry',
+          errors
+        });
+      },
+    })
+  );
   app.useGlobalFilters(new HttpExceptionFilter());
 
   const config = new DocumentBuilder()

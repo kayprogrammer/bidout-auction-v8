@@ -16,13 +16,26 @@ export class HttpExceptionFilter implements ExceptionFilter {
     catch(exception: HttpException, host: ArgumentsHost) {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
-        const request = ctx.getRequest<Request>();
-        const status = exception.getStatus();
+        // const request = ctx.getRequest<Request>();
+        var status = exception.getStatus();
 
-        const errResponse = exception.getResponse()
-        var errMsg = exception.message
-        Logger.log(JSON.stringify(errResponse))
-        // Logger.log(JSON.stringify(exception instanceof NotFoundException))
-        this.setResponse(response, status, exception.message)
+        var errMsg: any = exception.message
+        const errData: { [key: string]: string } = {};
+
+
+        // Handle Validation error
+        if (exception instanceof UnprocessableEntityException) {
+            const errResponse = exception.getResponse() as any
+            const errArray = errResponse.errors
+
+            errArray.forEach((error: { [key: string]: any }) => {
+                const errValues: string[] = Object.values(error.constraints);
+                errData[error.property] = errValues[0]
+            });
+
+            errMsg = "Invalid Entry"
+            status = 422
+        }
+        this.setResponse(response, status, errMsg, errData)
     }
 }

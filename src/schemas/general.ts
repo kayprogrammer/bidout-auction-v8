@@ -7,17 +7,17 @@ import { IsEmail } from "class-validator";
 export type SiteDetailSchema = Omit<SiteDetail, "id" | "createdAt" | "updatedAt">;
 
 export class SubscriberSchema {
-    @IsEmail()
-    @ApiProperty({example: "johndoe@email.com"})
+    @IsEmail({}, { message: "Enter a valid email" })
+    @ApiProperty({ example: "johndoe@email.com" })
     email: string
 }
 
 export class SiteDetailResponseSchema extends ResponseSchema {
-    @ApiProperty({example: siteDetailExample})
+    @ApiProperty({ example: siteDetailExample })
     data: SiteDetailSchema;
 }
 
 export class SubscriberResponseSchema extends ResponseSchema {
-    @ApiProperty({example: subscriberExample})
+    @ApiProperty({ example: subscriberExample })
     data: SubscriberSchema;
 }
