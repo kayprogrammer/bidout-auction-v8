@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
-import { Category, Listing, Otp, Prisma, User } from '@prisma/client';
-import { hashPassword, randomStr, slugify } from 'src/utils';
-import { UUID, randomInt } from 'crypto';
-import settings from 'src/config/config';
+import { Category, Listing, Prisma, Watchlist } from '@prisma/client';
+import { randomStr, slugify } from 'src/utils';
+import { UUID } from 'crypto';
 
 @Injectable()
 export class CategoryService {
@@ -79,7 +78,7 @@ export class ListingService {
 
     async update(data: Listing): Promise<Listing> {
         var slug: string = data.slug || slugify(data.name)
-        var existingSlug: Listing | null = await this.prisma.listing.findFirst({ where: {slug, NOT: {id: data.id} }});
+        var existingSlug: Listing | null = await this.prisma.listing.findFirst({ where: { slug, NOT: { id: data.id } } });
         data.slug = slug
         if (existingSlug) {
             data.slug = `${slug}-${randomStr(4)}`
@@ -96,10 +95,92 @@ export class ListingService {
     }
 
     timeLeft(listing: Listing): number {
-        if (! listing.active) {
+        if (!listing.active) {
             return 0
         }
         return this.timeLeftSeconds(listing)
     }
+}
+
+@Injectable()
+export class WatchlistService {
+    constructor(private prisma: PrismaService) { }
+
+    async getAll(): Promise<Listing[]> {
+        const listings: Listing[] = await this.prisma.listing.findMany({ orderBy: { createdAt: 'desc' } });
+        return listings
+    }
+
+    async getByUserId(userId: Prisma.WatchlistWhereInput): Promise<Watchlist[]> {
+        const watchlist: Watchlist[] = await this.prisma.watchlist.findMany({ where: userId, orderBy: { createdAt: 'desc' } });
+        return watchlist
+    }
+
+    async getBySessionKey(sessionKey: UUID, userId: UUID): Promise<{ listingId: string; }[]> {
+        const excludedListingIds = await this.prisma.watchlist.findMany({
+            where: {
+                user: {
+                    id: userId, // Replace userId with your user's ID
+                },
+            },
+            select: {
+                listingId: true,
+            },
+        });
+        const watchlist: { listingId: string; }[] = await this.prisma.watchlist.findMany({
+            where: {
+                sessionKey: sessionKey,
+                listingId: {
+                    notIn: excludedListingIds.map((item) => item.listingId),
+                },
+            },
+            select: {
+                listingId: true,
+            },
+        });
+        return watchlist
+    }
+
+    async getByClientId(clientId: UUID): Promise<Watchlist[]> {
+        const watchlist: Watchlist[] = await this.prisma.watchlist.findMany({
+            where: {
+                OR: [
+                    { userId: clientId },
+                    { sessionKey: clientId }
+                ]
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        return watchlist
+    }
+
+    async getByClientIdAndListingId(listingId: string, clientId?: string): Promise<Watchlist | null> {
+        if (!clientId) return null;
+
+        const watchlist: Watchlist | null = await this.prisma.watchlist.findFirst({
+            where: {
+                listingId,
+                OR: [
+                    { userId: clientId },
+                    { sessionKey: clientId }
+                ]
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        return watchlist
+    }
+
+    async create(data: Watchlist): Promise<Watchlist> {
+        const userId: string | null = data.userId
+        const sessionKey: string | null = data.sessionKey
+        const listingId: string = data.listingId
+        const clientId: string | null = userId || sessionKey
+
+        // Avoid duplicates
+        const existingWatchlist = await this.getByClientIdAndListingId(listingId, clientId as string)
+        if (existingWatchlist) return existingWatchlist;
+        return await this.prisma.watchlist.create({ data })
+    }
+
 }
 
