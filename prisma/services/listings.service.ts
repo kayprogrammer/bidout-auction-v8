@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
-import { Category, Listing, Prisma, Watchlist } from '@prisma/client';
+import { Bid, Category, Listing, Prisma, Watchlist } from '@prisma/client';
 import { randomStr, slugify } from 'src/utils';
 import { UUID } from 'crypto';
 
@@ -165,7 +165,6 @@ export class WatchlistService {
                     { sessionKey: clientId }
                 ]
             },
-            orderBy: { createdAt: 'desc' }
         });
         return watchlist
     }
@@ -181,6 +180,47 @@ export class WatchlistService {
         if (existingWatchlist) return existingWatchlist;
         return await this.prisma.watchlist.create({ data })
     }
+}
 
+@Injectable()
+export class BidService {
+    constructor(private prisma: PrismaService) { }
+
+    async getByUserId(userId: Prisma.BidWhereInput): Promise<Bid[]> {
+        const bids: Bid[] = await this.prisma.bid.findMany({ where: userId, orderBy: { createdAt: 'desc' } });
+        return bids
+    }
+
+    async getByListingId(listingId: Prisma.BidWhereInput): Promise<Bid[]> {
+        const bids: Bid[] = await this.prisma.bid.findMany({ where: listingId, orderBy: { createdAt: 'desc' } });
+        return bids
+    }
+
+
+    async getByUserIdAndListingId(userId: string, listingId: string): Promise<Bid | null> {
+        const bid: Bid | null = await this.prisma.bid.findFirst({
+            where: {
+                userId,
+                listingId
+            },
+        });
+        return bid
+    }
+
+    async create(data: Bid): Promise<Bid> {
+        const userId: string | null = data.userId
+        const listingId: string = data.listingId
+
+        const existingBid: Bid | null = await this.getByUserIdAndListingId(userId, listingId)
+        if (existingBid) {
+            // Update the bid
+            return await this.update(existingBid.id, data)
+        }
+        return await this.prisma.bid.create({ data })
+    }
+
+    async update(id: string, data: Bid): Promise<Bid> {
+        return await this.prisma.bid.update({ where: { id }, data })
+    }
 }
 
