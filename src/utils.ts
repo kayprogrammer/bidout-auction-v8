@@ -32,4 +32,13 @@ export const randomStr = (length: number): string => {
     }
   
     return randomString;
-  }
+}
+
+export const randomItem = (items: any[]): any => {
+    // Generate a random index within the range of the array
+    const randomIndex = Math.floor(Math.random() * items.length);
+
+    // Use the random index to select a random item from the array
+    const randomItem = items[randomIndex];
+    return randomItem;
+}

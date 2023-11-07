@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
-import { Prisma, Review, Subscriber } from '@prisma/client';
+import { File, Prisma, Review, Subscriber } from '@prisma/client';
 import { excludeFields } from './utils';
 import { SiteDetailSchema } from 'src/schemas/general';
 
@@ -56,5 +56,19 @@ export class ReviewService {
             }
         })
 
+    }
+
+    async bulkCreate(data: any): Promise<Prisma.BatchPayload> {
+        return await this.prisma.review.createMany({data})
+    }
+}
+
+@Injectable()
+export class FileService {
+    constructor(private prisma: PrismaService) { }
+
+    async bulkCreate(data: any): Promise<string[]> {
+        const files: any = await this.prisma.file.createMany({data})
+        return files.map((file: File) => {file.id});
     }
 }

@@ -18,6 +18,11 @@ export class CategoryService {
         return user
     }
 
+    async getAllIds(): Promise<string[]> {
+        const categories: {id: string}[] = await this.prisma.category.findMany({select: {id: true}}) 
+        return categories.map((category) => {category.id}) as unknown as string[]
+    }
+
     async create(data: Prisma.CategoryCreateInput): Promise<Category> {
         var slug: string = data.slug || slugify(data.name)
         var existingSlug = await this.getBySlug(slug as Prisma.CategoryWhereInput)
@@ -28,6 +33,11 @@ export class CategoryService {
         }
         const category: Category = await this.prisma.category.create({ data })
         return category
+    }
+
+    async bulkCreate(data: any): Promise<string[]> {
+        const categories: any = await this.prisma.category.createMany({data, skipDuplicates: true})
+        return categories.map((category: Category) => {category.id})
     }
 }
 
@@ -64,6 +74,10 @@ export class ListingService {
         return listings
     }
 
+    async getCount(): Promise<number> {
+        return this.prisma.listing.count()
+    }
+
     async create(data: Prisma.ListingCreateInput): Promise<Listing> {
         var slug: string = data.slug || slugify(data.name)
         var existingSlug = await this.getBySlug(slug as Prisma.ListingWhereInput)
@@ -86,6 +100,10 @@ export class ListingService {
         }
         const listing: Listing = await this.prisma.listing.update({ where: { id: data.id }, data })
         return listing
+    }
+
+    async bulkCreate(data: any): Promise<Prisma.BatchPayload> {
+        return await this.prisma.listing.createMany({data, skipDuplicates: true})
     }
 
     timeLeftSeconds(listing: Listing): number {
