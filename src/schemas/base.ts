@@ -7,3 +7,8 @@ export class ResponseSchema {
     @ApiProperty()
     message: string;
 }
+
+export class UserSchema {
+    name: string
+    avatar: string
+}

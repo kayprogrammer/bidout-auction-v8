@@ -45,6 +45,9 @@ export class ReviewService {
         return this.prisma.review.findMany({
             where: {
                 show: true
+            },
+            include: {
+                reviewer: true
             }
         });
     }

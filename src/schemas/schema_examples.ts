@@ -12,3 +12,8 @@ export const siteDetailExample = {
 export const subscriberExample = {
     email: "johndoe@example.com"
 }
+
+export const simpleUserExample = {
+    name: "John Doe",
+    avatar: "https://img.com"
+}

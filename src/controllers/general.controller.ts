@@ -1,14 +1,18 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Get, Logger, Post, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
-import { SiteDetailService, SubscriberService } from '../../prisma/services/general.service';
-import { SiteDetailResponseSchema, SubscriberResponseSchema, SubscriberSchema } from '../schemas/general';
+import { ReviewService, SiteDetailService, SubscriberService } from '../../prisma/services/general.service';
+import { ReviewSchema, ReviewsResponseSchema, SiteDetailResponseSchema, SubscriberResponseSchema, SubscriberSchema } from '../schemas/general';
+import { plainToClass } from 'class-transformer';
+import { Review } from '@prisma/client';
 
-@Controller('api/v1/general')
+@Controller('api/v8/general')
 @ApiTags('General')
 export class GeneralController {
   constructor(
     private readonly siteDetailService: SiteDetailService,
     private readonly subscriberService: SubscriberService,
+    private readonly reviewService: ReviewService,
+
   ) { }
 
   @Get("/site-detail")
@@ -34,6 +38,20 @@ export class GeneralController {
     const resp = new SubscriberResponseSchema()
     resp.message = 'Subscription successful'
     resp.data = subscriber
+    return resp
+  }
+
+  @Get("/reviews")
+  @ApiOperation({ summary: 'Retrieve site reviews', description: "This endpoint retrieves few reviews of the site/application" })
+  @ApiResponse({ status: 200, type: ReviewsResponseSchema })
+  async retrieveReviews(): Promise<ReviewsResponseSchema> {
+    const reviews = await this.reviewService.getActive();
+
+    // Return response
+    const resp = new ReviewsResponseSchema()
+    resp.message = 'Reviews fetched'
+    Logger.log(plainToClass(ReviewSchema, reviews, {strategy: 'excludeAll'}))
+    resp.data = reviews
     return resp
   }
   
