@@ -3,7 +3,7 @@ import settings from "../config/config"
 import { UserService } from "prisma/services/accounts.service"
 import { CategoryService, ListingService } from "prisma/services/listings.service"
 import { FileService, ReviewService } from "prisma/services/general.service"
-import { randomItem, slugify } from "src/utils"
+import { randomItem, slugify } from "src/utils/utils"
 
 class CreateData {
     constructor(

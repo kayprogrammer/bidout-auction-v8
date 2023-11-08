@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { Bid, Category, Listing, Prisma, Watchlist } from '@prisma/client';
-import { randomStr, slugify } from 'src/utils';
+import { randomStr, slugify } from 'src/utils/utils';
 import { UUID } from 'crypto';
 
 @Injectable()
