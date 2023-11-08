@@ -1,4 +1,4 @@
-import settings from "src/config/config"
+import settings from "../config/config"
 import { v2 as cloudinary } from 'cloudinary'
 import { Logger } from "@nestjs/common";
 
@@ -54,5 +54,4 @@ export class FileProcessor {
             Logger.log(e)
         }
     }
-
 }

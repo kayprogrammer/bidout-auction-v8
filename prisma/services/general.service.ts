@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '../../src/prisma.service';
 import { File, Prisma, Review, Subscriber } from '@prisma/client';
 import { excludeFields } from './utils';
-import { SiteDetailSchema } from 'src/schemas/general';
+import { SiteDetailSchema } from '../../src/schemas/general';
 
 var fieldsToExclude: any[] = ["id", "createdAt", "updatedAt"]
 
@@ -58,8 +58,8 @@ export class ReviewService {
 
     }
 
-    async bulkCreate(data: any): Promise<Prisma.BatchPayload> {
-        return await this.prisma.review.createMany({data})
+    async bulkCreate(data: any): Promise<any> {
+        await this.prisma.review.createMany({data})
     }
 }
 
@@ -67,8 +67,12 @@ export class ReviewService {
 export class FileService {
     constructor(private prisma: PrismaService) { }
 
-    async bulkCreate(data: any): Promise<string[]> {
-        const files: any = await this.prisma.file.createMany({data})
-        return files.map((file: File) => {file.id});
+    async getLatestIds(amount: number): Promise<string[]> {
+        const files: File[] = await this.prisma.file.findMany({orderBy: { createdAt: 'desc' }, take: amount})
+        return files.map((file: File) => file.id);
+    }
+
+    async bulkCreate(data: any): Promise<any> {
+        await this.prisma.file.createMany({data})
     }
 }

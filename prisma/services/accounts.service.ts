@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '../../src/prisma.service';
 import { Otp, Prisma, User } from '@prisma/client';
-import { hashPassword } from 'src/utils';
+import { hashPassword } from '../../src/utils/utils';
 import { randomInt } from 'crypto';
-import settings from 'src/config/config';
+import settings from '../../src/config/config'; 
 
 @Injectable()
 export class UserService {
     constructor(private prisma: PrismaService) { }
 
-    async getByEmail(email: Prisma.UserWhereInput): Promise<User | null> {
-        const user: User | null = await this.prisma.user.findFirst({ where: email });
+    async getByEmail(email: string): Promise<User | null> {
+        const user: User | null = await this.prisma.user.findFirst({ where: {email} });
         return user
     }
 

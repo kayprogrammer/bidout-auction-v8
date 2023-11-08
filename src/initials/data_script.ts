@@ -1,18 +1,37 @@
+import * as path from 'path';
+import * as fs from 'fs';
 import { Prisma, User } from "@prisma/client"
 import settings from "../config/config"
 import { UserService } from "prisma/services/accounts.service"
 import { CategoryService, ListingService } from "prisma/services/listings.service"
 import { FileService, ReviewService } from "prisma/services/general.service"
-import { randomItem, slugify } from "src/utils/utils"
+import { randomItem, slugify } from "../utils/utils"
+import { FileProcessor } from '../utils/file_processors';
+import { Logger } from '@nestjs/common';
 
-class CreateData {
+const currentDir = path.resolve(__dirname);
+const testImagesDirectory = path.join(currentDir, 'images');
+
+export class CreateData {
     constructor(
         private userService: UserService,
         private listingService: ListingService,
         private reviewService: ReviewService,
         private categoryService: CategoryService,
         private fileService: FileService,
+        private fileProcessor: FileProcessor,
     ) { }
+
+    public async initialize(): Promise<any> {
+        Logger.log("Creating initial data")
+        await this.createSuperuser()
+        const auctioneer: User = await this.createAuctioneer()
+        const reviewer: User = await this.createReviewer()
+        await this.createReviews(reviewer.id)
+        const categoryIds: string[] = await this.createCategories()
+        await this.createListings(auctioneer.id, categoryIds)
+        Logger.log("Initial data created")
+    }
 
     async createSuperuser(): Promise<User> {
         const userDict = {
@@ -24,7 +43,7 @@ class CreateData {
             isStaff: true,
             isEmailVerified: true
         }
-        const superuser: User | null = await this.userService.getByEmail(userDict.email as Prisma.UserWhereInput)
+        const superuser: User | null = await this.userService.getByEmail(userDict.email)
         if (!superuser) return await this.userService.create(userDict)
         return superuser
     }
@@ -37,7 +56,7 @@ class CreateData {
             password: settings.firstAuctioneerPassword,
             isEmailVerified: true
         }
-        const auctioneer: User | null = await this.userService.getByEmail(userDict.email as Prisma.UserWhereInput)
+        const auctioneer: User | null = await this.userService.getByEmail(userDict.email)
         if (!auctioneer) return await this.userService.create(userDict)
         return auctioneer
     }
@@ -50,7 +69,7 @@ class CreateData {
             password: settings.firstReviewerPassword,
             isEmailVerified: true
         }
-        const reviewer: User | null = await this.userService.getByEmail(userDict.email as Prisma.UserWhereInput)
+        const reviewer: User | null = await this.userService.getByEmail(userDict.email)
         if (!reviewer) return await this.userService.create(userDict)
         return reviewer
     }
@@ -85,7 +104,8 @@ class CreateData {
     async createCategories(): Promise<string[]> {
         var categoriesId: string[] = await this.categoryService.getAllIds();
         if (categoriesId.length < 1) {
-            categoriesId = await this.categoryService.bulkCreate(this.categoryMappings())
+            await this.categoryService.bulkCreate(this.categoryMappings())
+            categoriesId = await this.categoryService.getAllIds();
         }
         return categoriesId
     }
@@ -103,7 +123,9 @@ class CreateData {
         const fileTypeMappings: { [key: string]: string }[] = new Array(6).fill({ resourceType: "image/png" })
         const listingsCount: number = await this.listingService.getCount()
         if (listingsCount < 1) {
-            const imageIds: string[] = await this.fileService.bulkCreate(fileTypeMappings)
+            await this.fileService.bulkCreate(fileTypeMappings)
+            const imageIds: string[] = await this.fileService.getLatestIds(6)
+
             var updatedListingMappings: { [key: string]: string | number | Date }[] = []
             this.listingMappings().map((listing: { [key: string]: string | number | Date; }, i: number) => {
                 listing.slug = slugify(listing.name as string)
@@ -117,6 +139,11 @@ class CreateData {
             this.listingService.bulkCreate(updatedListingMappings)
 
             // Upload Images
+            const imageFiles = fs.readdirSync(testImagesDirectory);
+            imageFiles.map((imageFile: string, i: number) => {
+                const imagePath = path.join(testImagesDirectory, imageFile);
+                this.fileProcessor.upload_file(imagePath, imageIds[i], "listings")
+            })
         }
     }
 

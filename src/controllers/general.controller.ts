@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { SiteDetailService, SubscriberService } from '../../prisma/services/general.service';
-import { SiteDetailResponseSchema, SubscriberResponseSchema, SubscriberSchema } from 'src/schemas/general';
+import { SiteDetailResponseSchema, SubscriberResponseSchema, SubscriberSchema } from '../schemas/general';
 
 @Controller('api/v1/general')
 @ApiTags('General')

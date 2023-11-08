@@ -31,8 +31,8 @@ mmig: # run with "make mmig" or "make mmig message='migration message'"
 mig:
 	npx prisma db push
 
-initial_data:
-	python initials/initial_data.py
+init:
+	npm run initial-data
 
 tests:
 	pytest --disable-warnings -vv -x

@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
+import { Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from '../../src/prisma.service';
 import { Bid, Category, Listing, Prisma, Watchlist } from '@prisma/client';
-import { randomStr, slugify } from 'src/utils/utils';
+import { randomStr, slugify } from '../../src/utils/utils';
 import { UUID } from 'crypto';
 
 @Injectable()
@@ -35,9 +35,8 @@ export class CategoryService {
         return category
     }
 
-    async bulkCreate(data: any): Promise<string[]> {
-        const categories: any = await this.prisma.category.createMany({data, skipDuplicates: true})
-        return categories.map((category: Category) => {category.id})
+    async bulkCreate(data: any): Promise<any> {
+        await this.prisma.category.createMany({data, skipDuplicates: true})
     }
 }
 
@@ -102,8 +101,8 @@ export class ListingService {
         return listing
     }
 
-    async bulkCreate(data: any): Promise<Prisma.BatchPayload> {
-        return await this.prisma.listing.createMany({data, skipDuplicates: true})
+    async bulkCreate(data: any): Promise<any> {
+        await this.prisma.listing.createMany({data, skipDuplicates: true})
     }
 
     timeLeftSeconds(listing: Listing): number {
