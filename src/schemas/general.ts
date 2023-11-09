@@ -1,7 +1,7 @@
 import { ResponseSchema, UserSchema } from "./base";
 import { ApiProperty } from "@nestjs/swagger";
 import { simpleUserExample, siteDetailExample, subscriberExample } from "./schema_examples";
-import { Review, SiteDetail } from "@prisma/client";
+import { Prisma, Review, SiteDetail } from "@prisma/client";
 import { IsEmail } from "class-validator";
 
 export type SiteDetailSchema = Omit<SiteDetail, "id" | "createdAt" | "updatedAt">;
@@ -18,6 +18,11 @@ export class ReviewSchema {
 
     @ApiProperty({ example: "This is a nice platform" })
     text: string
+
+    constructor(data: Prisma.ReviewGetPayload<{}>) {
+        // Use TypeScript's property assignments
+        Object.assign(this, data);
+    }
 
 }
 

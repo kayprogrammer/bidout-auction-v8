@@ -50,8 +50,9 @@ export class GeneralController {
     // Return response
     const resp = new ReviewsResponseSchema()
     resp.message = 'Reviews fetched'
+    resp.data = reviews as any
     Logger.log(plainToClass(ReviewSchema, reviews, {strategy: 'excludeAll'}))
-    resp.data = reviews
+    // resp.data = plainToClass(ReviewSchema, reviews, {strategy: 'excludeAll'})
     return resp
   }
   
