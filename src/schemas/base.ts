@@ -1,19 +1,20 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Expose, Transform } from "class-transformer";
+import { Exclude, Expose, Transform } from "class-transformer";
 import { userExample } from "./schema_examples";
 
 export class ResponseSchema {
-    @ApiProperty({example: "success"})
+    @ApiProperty({ example: "success" })
     status: "success" | "failure" = "success";
 
     @ApiProperty()
     message: string;
 }
 
+@Exclude()
 export class UserSchema {
-    @Expose()
     @ApiProperty({ example: userExample.name })
-    @Transform(({ value, key, obj, type }) => `${obj.firstName} ${obj.lastName}` )
+    @Expose()
+    @Transform(({ value, key, obj, type }) => `${obj.firstName} ${obj.lastName}`)
     name: string
 
     @Expose()

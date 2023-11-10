@@ -2,57 +2,49 @@ import { ResponseSchema, UserSchema } from "./base";
 import { ApiProperty } from "@nestjs/swagger";
 import { siteDetailExample, userExample } from "./schema_examples";
 import { IsEmail } from "class-validator";
-import { Expose, Type } from "class-transformer";
+import { Expose, Transform, Type, plainToInstance } from "class-transformer";
 
+@Expose()
 export class SiteDetailSchema {
-    @Expose()
     @ApiProperty({ example: siteDetailExample.name })
     name: string;
 
     @ApiProperty({ example: siteDetailExample.email })
-    @Expose()
     email: string;
 
     @ApiProperty({ example: siteDetailExample.phone })
-    @Expose()
     phone: string;
 
     @ApiProperty({ example: siteDetailExample.address })
-    @Expose()
     address: string;
 
     @ApiProperty({ example: siteDetailExample.fb })
-    @Expose()
     fb: string;
 
     @ApiProperty({ example: siteDetailExample.tw })
-    @Expose()
     tw: string;
 
     @ApiProperty({ example: siteDetailExample.wh })
-    @Expose()
     wh: string;
 
     @ApiProperty({ example: siteDetailExample.ig })
-    @Expose()
     ig: string;
 }
 
+@Expose()
 export class SubscriberSchema {
-    @Expose()
     @IsEmail({}, { message: "Enter a valid email" })
     @ApiProperty({ example: userExample.email })
     email: string
 }
 
+@Expose()
 export class ReviewSchema {
     @ApiProperty()
-    @Expose()
     @Type(() => UserSchema)
     reviewer: UserSchema
 
     @ApiProperty({ example: "This is a nice platform" })
-    @Expose()
     text: string
 
 }
