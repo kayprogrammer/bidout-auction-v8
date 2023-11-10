@@ -35,7 +35,7 @@ init:
 	npm run initial-data
 
 tests:
-	pytest --disable-warnings -vv -x
+	npm run test:watch
 
 reqm:
 	npm install
