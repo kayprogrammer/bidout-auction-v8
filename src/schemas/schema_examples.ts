@@ -9,11 +9,8 @@ export const siteDetailExample = {
     ig: 		"https://instagram.com"
 }
 
-export const subscriberExample = {
-    email: "johndoe@example.com"
-}
-
-export const simpleUserExample = {
+export const userExample = {
     name: "John Doe",
+    email: "johndoe@example.com",
     avatar: "https://img.com"
 }

@@ -42,14 +42,22 @@ export class ReviewService {
     constructor(private prisma: PrismaService) { }
 
     async getActive(): Promise<Review[]> {
-        return this.prisma.review.findMany({
+        const reviews: {}[] = await this.prisma.review.findMany({
             where: {
                 show: true
             },
-            include: {
-                reviewer: true
-            }
+            select: {
+                reviewer: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                        avatar: true
+                    }
+                },
+                text: true
+            },
         });
+        return reviews as Review[]
     }
 
     async getCount(): Promise<number> {

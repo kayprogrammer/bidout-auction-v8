@@ -1,9 +1,8 @@
-import { Body, ClassSerializerInterceptor, Controller, Get, Logger, Post, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { ReviewService, SiteDetailService, SubscriberService } from '../../prisma/services/general.service';
-import { ReviewSchema, ReviewsResponseSchema, SiteDetailResponseSchema, SubscriberResponseSchema, SubscriberSchema } from '../schemas/general';
-import { plainToClass } from 'class-transformer';
-import { Review } from '@prisma/client';
+import { ReviewSchema, ReviewsResponseSchema, SiteDetailResponseSchema, SiteDetailSchema, SubscriberResponseSchema, SubscriberSchema } from '../schemas/general';
+import { returnResponse } from 'src/utils/responses';
 
 @Controller('api/v8/general')
 @ApiTags('General')
@@ -22,10 +21,12 @@ export class GeneralController {
     const siteDetail = await this.siteDetailService.get();
 
     // Return response
-    const resp = new SiteDetailResponseSchema()
-    resp.message = 'Site Details fetched'
-    resp.data = siteDetail
-    return resp
+    return returnResponse(
+      SiteDetailResponseSchema, 
+      'Site Details fetched', 
+      siteDetail, 
+      SiteDetailSchema
+    )
   }
 
   @Post("/subscribe")
@@ -35,10 +36,12 @@ export class GeneralController {
     const subscriber = await this.subscriberService.getOrCreate(data);
 
     // Return response
-    const resp = new SubscriberResponseSchema()
-    resp.message = 'Subscription successful'
-    resp.data = subscriber
-    return resp
+    return returnResponse(
+      SubscriberResponseSchema, 
+      'Subscription successful', 
+      subscriber, 
+      SubscriberSchema
+    )
   }
 
   @Get("/reviews")
@@ -48,12 +51,12 @@ export class GeneralController {
     const reviews = await this.reviewService.getActive();
 
     // Return response
-    const resp = new ReviewsResponseSchema()
-    resp.message = 'Reviews fetched'
-    resp.data = reviews as any
-    Logger.log(plainToClass(ReviewSchema, reviews, {strategy: 'excludeAll'}))
-    // resp.data = plainToClass(ReviewSchema, reviews, {strategy: 'excludeAll'})
-    return resp
+    return returnResponse(
+      ReviewsResponseSchema, 
+      'Reviews fetched', 
+      reviews, 
+      ReviewSchema
+    )
   }
   
 }
