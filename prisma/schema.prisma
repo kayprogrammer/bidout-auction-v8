@@ -30,7 +30,7 @@ model User {
     isStaff Boolean @map(name: "is_staff") @default(false)
     termsAgreement Boolean @map(name: "terms_agreement") @default(false)
     avatarId String? @db.Uuid() @map(name: "avatar_id")
-    avatar File? @relation(fields: [avatarId], references: [id], onDelete: SetNull)
+    avatar FileModel? @relation(fields: [avatarId], references: [id], onDelete: SetNull)
     access String?
     refresh String?
     reviews Review[]
@@ -63,7 +63,7 @@ model Otp {
     @@map("otps")
 }
 
-model File {
+model FileModel {
     id String @id() @db.Uuid() @unique() @default(uuid())
     createdAt DateTime @map(name: "created_at") @default(now())
     updatedAt DateTime @map(name: "updated_at") @updatedAt()
@@ -104,7 +104,7 @@ model Listing {
     closingDate DateTime @map(name: "closing_date")
     active Boolean @default(true)
     imageId String @db.Uuid() @map(name: "image_id")
-    image File @relation(fields: [imageId], references: [id], onDelete: SetNull)
+    image FileModel @relation(fields: [imageId], references: [id], onDelete: SetNull)
     watchlists Watchlist[]
     bids Bid[]
 

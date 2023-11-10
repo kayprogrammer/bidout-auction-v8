@@ -7,7 +7,7 @@ abstract model BaseModel {
   updatedAt     DateTime     @map(name: "updated_at") @updatedAt                      // Automatically set the update timestamp
 }
 
-model File extends BaseModel {
+model FileModel extends BaseModel {
   @@map("files")
 
   resourceType  String       @map(name: "resource_type")

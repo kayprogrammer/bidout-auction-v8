@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../src/prisma.service';
-import { File, Prisma, Review, Subscriber } from '@prisma/client';
+import { FileModel, Prisma, Review, Subscriber } from '@prisma/client';
 import { excludeFields } from './utils';
 import { SiteDetailSchema } from '../../src/schemas/general';
 
@@ -79,11 +79,11 @@ export class FileService {
     constructor(private prisma: PrismaService) { }
 
     async getLatestIds(amount: number): Promise<string[]> {
-        const files: File[] = await this.prisma.file.findMany({orderBy: { createdAt: 'desc' }, take: amount})
-        return files.map((file: File) => file.id);
+        const files: FileModel[] = await this.prisma.fileModel.findMany({orderBy: { createdAt: 'desc' }, take: amount})
+        return files.map((file: FileModel) => file.id);
     }
 
     async bulkCreate(data: any): Promise<any> {
-        await this.prisma.file.createMany({data})
+        await this.prisma.fileModel.createMany({data})
     }
 }

@@ -26,7 +26,7 @@ model Listing extends BaseModel {
   closingDate       DateTime    @map(name: "closing_date") 
   active            Boolean     @default(true)
   imageId		    String	  @db.Uuid @map(name: "image_id")
-  image            File	    @relation(fields: [imageId], references: [id], onDelete: SetNull)
+  image            FileModel	    @relation(fields: [imageId], references: [id], onDelete: SetNull)
 
   // Not needed but compulsory according to design
   watchlists    Watchlist[]

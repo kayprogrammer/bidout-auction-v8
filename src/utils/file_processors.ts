@@ -1,6 +1,7 @@
 import settings from "../config/config"
 import { v2 as cloudinary } from 'cloudinary'
 import { Logger } from "@nestjs/common";
+import { FileModel } from "@prisma/client";
 
 export const ALLOWED_IMAGE_TYPES: { [key: string]: string } = {
     "image/bmp": ".bmp",
@@ -20,33 +21,40 @@ cloudinary.config({
     secure: true
 });
 export class FileProcessor {
-    generate_file_signature(key: string, folder: string): any {
-        var key = `${BASE_FOLDER}${folder}/${key}`
-        const timestamp = Math.round((new Date).getTime() / 1000);
-        const params = {
-            "public_id": key,
-            "timestamp": timestamp,
-        }
-        try {
-            const signature = cloudinary.utils.api_sign_request(params, settings.cloudinaryApiSecret)
-            return { "public_id": key, "signature": signature, "timestamp": timestamp }
-        } catch (e: any) {
-            Logger.log(e)
-        }
+    generateFileSignature(folder: string, key?: string): any {
+        if (key) { 
+            key = `${BASE_FOLDER}${folder}/${key}`
+            const timestamp = Math.round((new Date).getTime() / 1000);
+            const params = {
+                "public_id": key,
+                "timestamp": timestamp,
+            }
+            try {
+                const signature = cloudinary.utils.api_sign_request(params, settings.cloudinaryApiSecret)
+                return { "public_id": key, "signature": signature, "timestamp": timestamp }
+            } catch (e: any) {
+                Logger.log(e)
+            }
+        }   
+        return null
     }
 
-    generate_file_url(key: string, folder: string, contentType: string): any {
-        const fileExtension = ALLOWED_IMAGE_TYPES[contentType]
-        key = `${BASE_FOLDER}${folder}/${key}${fileExtension}`
+    generateFileUrl(fileObj: FileModel, folder: string): any {
+        if (fileObj){
+            const fileExtension = ALLOWED_IMAGE_TYPES[fileObj.resourceType]
+            const key = `${BASE_FOLDER}${folder}/${fileObj.id}${fileExtension}`
 
-        try {
-            return cloudinary.url(key)[0]
-        } catch (e: any) {
-            Logger.error(`Error generating url for ${key}: ${e}`)
+            try {
+                Logger.log(key)
+                return cloudinary.url(key)[0]
+            } catch (e: any) {
+                Logger.error(`Error generating url for ${key}: ${e}`)
+            }
         }
+        return null
     }
 
-    upload_file(file: string, key: string, folder: string): any {
+    uploadFile(file: string, key: string, folder: string): any {
         key = `${BASE_FOLDER}${folder}/${key}`
         try {
             cloudinary.uploader.upload(file, { public_id: key, overwrite: true, faces: true })

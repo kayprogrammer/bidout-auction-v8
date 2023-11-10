@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { Prisma, User } from "@prisma/client"
+import { User } from "@prisma/client"
 import settings from "../config/config"
 import { UserService } from "prisma/services/accounts.service"
 import { CategoryService, ListingService } from "prisma/services/listings.service"
@@ -142,7 +142,7 @@ export class CreateData {
             const imageFiles = fs.readdirSync(testImagesDirectory);
             imageFiles.map((imageFile: string, i: number) => {
                 const imagePath = path.join(testImagesDirectory, imageFile);
-                this.fileProcessor.upload_file(imagePath, imageIds[i], "listings")
+                this.fileProcessor.uploadFile(imagePath, imageIds[i], "listings")
             })
         }
     }
