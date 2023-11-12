@@ -1,5 +1,5 @@
 import { GeneralController } from '../controllers/general.controller';
-import { SiteDetailService, SubscriberService, ReviewService } from '../../prisma/services/general.service';
+import { ReviewService, SiteDetailService, SubscriberService } from '../../prisma/services/general.service';
 import { PrismaService } from '../prisma.service';
 
 describe('GeneralController', () => {
@@ -9,23 +9,19 @@ describe('GeneralController', () => {
   let reviewService: ReviewService;
 
   beforeEach(() => {
-    siteDetailService = new SiteDetailService(new PrismaService());
-    subscriberService = new SubscriberService(new PrismaService());
-    reviewService = new ReviewService(new PrismaService());
+    siteDetailService = new SiteDetailService(new PrismaService()); // Mock or substitute this with a testable instance
     generalController = new GeneralController(siteDetailService, subscriberService, reviewService);
-    
   });
 
   describe('retrieveSiteDetails', () => {
-    it('should return site details', async () => {
-      const result = {
-        status: 'success',
-        message: 'Site Details Fetched'
-      };
-      // jest.spyOn(generalController, 'retrieveSiteDetails').mockImplementation(() => result);
-
-      expect(await generalController.retrieveSiteDetails()).toHaveProperty("status", "success");
-      expect(await generalController.retrieveSiteDetails()).toHaveProperty("message", "Site Details Fetched");
+    it('Should return site details', async () => {
+      const result = await generalController.retrieveSiteDetails();
+      expect(result).toHaveProperty('status', 'success');
+      expect(result).toHaveProperty('message', 'Site Details Fetched');
+      const expectedKeys: string[] = ["name", "email", "phone", "address", "fb", "tw", "wh", "ig"];
+      for (const key of expectedKeys) {
+        expect(Object.keys(result.data)).toContain(key);
+      }
     });
   });
 });

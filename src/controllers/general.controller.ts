@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { ReviewService, SiteDetailService, SubscriberService } from '../../prisma/services/general.service';
 import { ReviewSchema, ReviewsResponseSchema, SiteDetailResponseSchema, SiteDetailSchema, SubscriberResponseSchema, SubscriberSchema } from '../schemas/general';
-import { returnResponse } from 'src/utils/responses';
+import { returnResponse } from '../utils/responses';
 
 @Controller('api/v8/general')
 @ApiTags('General')
@@ -23,7 +23,7 @@ export class GeneralController {
     // Return response
     return returnResponse(
       SiteDetailResponseSchema, 
-      'Site Details fetched', 
+      'Site Details Fetched', 
       siteDetail, 
       SiteDetailSchema
     )
