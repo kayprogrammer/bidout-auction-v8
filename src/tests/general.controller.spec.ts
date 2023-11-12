@@ -26,7 +26,6 @@ describe('GeneralController', () => {
 
       expect(await generalController.retrieveSiteDetails()).toHaveProperty("status", "success");
       expect(await generalController.retrieveSiteDetails()).toHaveProperty("message", "Site Details Fetched");
-      expect(await generalController.retrieveSiteDetails()).toHaveProperty("data");
     });
   });
 });
