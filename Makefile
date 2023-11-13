@@ -35,7 +35,7 @@ init:
 	npm run initial-data
 
 tests:
-	npm run test:watch
+	npm test
 
 reqm:
 	npm install
