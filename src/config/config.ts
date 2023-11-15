@@ -17,7 +17,9 @@ class Configuration {
     public postgresServer: string;
     public postgresPort: number;
     public postgresDb: string;
+    public testPostgresDb: string;
     public databaseUrl: string;
+    public testDatabaseUrl: string;
     public mailSenderEmail: string;
     public mailSenderPassword: string;
     public mailSenderHost: string;
@@ -47,7 +49,9 @@ class Configuration {
       this.postgresServer = process.env.POSTGRES_SERVER || '';
       this.postgresPort = parseInt(process.env.POSTGRES_PORT || '0');
       this.postgresDb = process.env.POSTGRES_DB || '';
+      this.testPostgresDb = process.env.TEST_POSTGRES_DB || '';
       this.databaseUrl = process.env.DATABASE_URL || '';
+      this.testDatabaseUrl = process.env.TEST_DATABASE_URL || '';
       this.mailSenderEmail = process.env.MAIL_SENDER_EMAIL || '';
       this.mailSenderPassword = process.env.MAIL_SENDER_PASSWORD || '';
       this.mailSenderHost = process.env.MAIL_SENDER_HOST || '';

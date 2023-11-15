@@ -13,7 +13,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
+    "test": "env-cmd -f .env.test npx prisma db push --force-reset && jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
@@ -34,6 +34,7 @@
     "class-validator": "^0.14.0",
     "cloudinary": "^1.41.0",
     "dotenv": "^16.3.1",
+    "env-cmd": "^10.1.0",
     "jest-mock-extended": "^3.0.5",
     "pg": "^8.11.3",
     "reflect-metadata": "^0.1.13",
@@ -68,5 +69,22 @@
     "webpack": "^5.89.0",
     "webpack-node-externals": "^3.0.0",
     "zenstack": "1.1.1"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
   }
 }
