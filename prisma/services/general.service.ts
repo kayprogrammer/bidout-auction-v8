@@ -72,6 +72,10 @@ export class ReviewService {
     async bulkCreate(data: any): Promise<any> {
         await this.prisma.review.createMany({data})
     }
+
+    async create(data: { [key: string]: string | boolean }): Promise<Review> {
+        return await this.prisma.review.create({ data: data as any })
+    }
 }
 
 @Injectable()
