@@ -2,7 +2,7 @@ import { ResponseSchema, UserSchema } from "./base";
 import { ApiProperty } from "@nestjs/swagger";
 import { siteDetailExample, userExample } from "./schema_examples";
 import { IsEmail } from "class-validator";
-import { Expose, Transform, Type, plainToInstance } from "class-transformer";
+import { Expose, Type } from "class-transformer";
 
 @Expose()
 export class SiteDetailSchema {

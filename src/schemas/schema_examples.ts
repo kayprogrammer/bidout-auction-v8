@@ -11,6 +11,9 @@ export const siteDetailExample = {
 
 export const userExample = {
     name: "John Doe",
+    firstName: "John",
+    lastName: "Doe",
     email: "johndoe@example.com",
-    avatar: "https://img.com"
+    avatar: "https://img.com",
+    password: "strongpassword"
 }
