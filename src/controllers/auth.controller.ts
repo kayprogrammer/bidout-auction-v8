@@ -4,6 +4,7 @@ import { UserService, OtpService } from '../../prisma/services/accounts.service'
 import { ReviewSchema, ReviewsResponseSchema, SiteDetailResponseSchema, SiteDetailSchema, SubscriberResponseSchema, SubscriberSchema } from '../schemas/general';
 import { returnResponse } from '../utils/responses';
 import { RegisterResponseSchema, RegisterSchema } from 'src/schemas/auth';
+import { RequestError } from '../exceptions.filter';
 
 @Controller('api/v8/auth')
 @ApiTags('Auth')
@@ -20,13 +21,13 @@ export class AuthController {
     // Check for existing user
     const existingUser = await this.userService.getByEmail(data.email)
     if (existingUser) {
-        throw 
+      throw new RequestError('Invalid Entry', 422, { email: 'Email already registered' });
     }
     const user = await this.userService.create(data);
 
     // Return response
     return returnResponse(
-        RegisterResponseSchema, 
+      RegisterResponseSchema, 
       'Registration successful', 
       user, 
       SubscriberSchema

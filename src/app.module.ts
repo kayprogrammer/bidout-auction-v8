@@ -5,9 +5,10 @@ import { PrismaService } from './prisma.service';
 import { FileService, ReviewService } from '../prisma/services/general.service';
 import { CategoryService, ListingService } from '../prisma/services/listings.service';
 import { FileProcessor } from './utils/file_processors';
+import { AuthModule } from './modules/auth.module';
 
 @Module({
-  imports: [GeneralModule],
+  imports: [GeneralModule, AuthModule],
   controllers: [],
   providers: [
     UserService, 
