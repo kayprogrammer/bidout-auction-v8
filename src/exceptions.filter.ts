@@ -1,5 +1,5 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, NotFoundException, ForbiddenException, UnauthorizedException, BadRequestException, UnprocessableEntityException, InternalServerErrorException, MethodNotAllowedException, BadGatewayException } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, NotFoundException, ForbiddenException, UnauthorizedException, BadRequestException, UnprocessableEntityException, InternalServerErrorException, MethodNotAllowedException, BadGatewayException, Logger } from '@nestjs/common';
+import { Response } from 'express';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -16,16 +16,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
     catch(exception: HttpException, host: ArgumentsHost) {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
-        // const request = ctx.getRequest<Request>();
+        var errResp: Record<string, any> = exception.getResponse() as Record<string, any>
         var status = exception.getStatus();
 
         var errMsg: any = exception.message
-        const errData: { [key: string]: string } = {};
-
+        var errData: { [key: string]: string } = errResp.data || {};
 
         // Handle Validation error
         if (exception instanceof UnprocessableEntityException) {
-            
             const errResponse = exception.getResponse() as any
             const errArray = errResponse.errors
 
@@ -37,7 +35,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
             errMsg = "Invalid Entry"
             status = 422
         }
-        this.setResponse(response, status, errMsg, errData)
+        this.setResponse(response as any, status, errMsg, errData)
     }
 }
 
