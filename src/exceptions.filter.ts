@@ -1,4 +1,4 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, NotFoundException, ForbiddenException, UnauthorizedException, BadRequestException, UnprocessableEntityException, InternalServerErrorException, MethodNotAllowedException, BadGatewayException, Logger } from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, UnprocessableEntityException } from '@nestjs/common';
 import { Response } from 'express';
 
 @Catch()
@@ -28,8 +28,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
             const errArray = errResponse.errors
 
             errArray.forEach((error: { [key: string]: any }) => {
-                const errValues: string[] = Object.values(error.constraints);
-                errData[error.property] = errValues[0]
+                var errValue = Object.values(error.constraints)[0];
+                if (Object.keys(error.constraints)[0] === "isNotEmpty"){
+                    errValue = "Field required"
+                }
+                errData[error.property] = errValue as string
             });
 
             errMsg = "Invalid Entry"
