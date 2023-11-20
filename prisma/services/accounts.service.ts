@@ -37,24 +37,24 @@ export class UserService {
 export class OtpService {
     constructor(private prisma: PrismaService) { }
 
-    async getByUserId(id: Prisma.OtpWhereInput): Promise<Otp | null> {
+    async getByUserId(id: string): Promise<Otp | null> {
         var otp: {} | null = await this.prisma.otp.findFirst({
-            where: id, select: { code: true }
+            where: {id}, select: { code: true }
         });
         return otp as Otp
     }
 
-    async create(data: Prisma.OtpCreateInput): Promise<Otp> {
-        data.code = randomInt(100000, 999999)
-        const existingOtp: Otp | null = await this.getByUserId(data.user as Prisma.OtpWhereInput)
+    async create(userId: string): Promise<Otp> {
+        const data = {code: randomInt(100000, 999999), userId}
+        const existingOtp: Otp | null = await this.getByUserId(userId)
         if (existingOtp) {
-            return await this.update(data as unknown as Otp)
+            return await this.update(data)
         }
-        const otp: Otp = await this.prisma.otp.create({ data })
+        const otp: Otp = await this.prisma.otp.create({data: data as any})
         return otp
     }
 
-    async update(data: Otp): Promise<Otp> {
+    async update(data: Record<string, any>): Promise<Otp> {
         const otp: Otp = await this.prisma.otp.update({ where: { userId: data.userId }, data })
         return otp
     }
