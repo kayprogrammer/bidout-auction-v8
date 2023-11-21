@@ -2,16 +2,14 @@ import { ResponseSchema } from "./base";
 import { ApiProperty } from "@nestjs/swagger";
 import { userExample } from "./schema_examples";
 import { IsEmail, IsNotEmpty } from "class-validator";
-import { Expose } from "class-transformer";
 import { SubscriberSchema } from "./general";
 
-@Expose()
 export class RegisterSchema {
-    @ApiProperty({ example: userExample.firstName })
+    @ApiProperty({ name: "first_name", example: userExample.firstName })
     @IsNotEmpty()
     firstName: string;
 
-    @ApiProperty({ example: userExample.lastName })
+    @ApiProperty({ name: "last_name", example: userExample.lastName })
     @IsNotEmpty()
     lastName: string;
 
@@ -23,11 +21,10 @@ export class RegisterSchema {
     @IsNotEmpty()
     password: string;
 
-    @ApiProperty({ example: true })
+    @ApiProperty({ name: "terms_agreement", example: true })
     @IsNotEmpty()
     termsAgreement: boolean;
 }
-
 
 export class RegisterResponseSchema extends ResponseSchema {
     @ApiProperty()

@@ -1,5 +1,6 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, UnprocessableEntityException, Logger } from '@nestjs/common';
 import { Response } from 'express';
+import snakecaseKeys from 'snakecase-keys'
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -8,7 +9,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
             status: "failure",
             message: message,
         }
-        if (data) respData.data = data
+        if (data) respData.data = snakecaseKeys(data)
         response
             .status(statusCode)
             .json(respData);
@@ -16,6 +17,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     catch(exception: HttpException, host: ArgumentsHost) {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
+        Logger.log(exception.message)
         var errResp: Record<string, any> = exception.getResponse() as Record<string, any>
         var status = exception.getStatus();
 

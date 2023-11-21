@@ -1,11 +1,10 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, SerializeOptions } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { UserService } from '../../prisma/services/accounts.service';
 import { SubscriberSchema } from '../schemas/general';
 import { returnResponse } from '../utils/responses';
 import { RegisterResponseSchema, RegisterSchema } from 'src/schemas/auth';
 import { RequestError } from '../exceptions.filter';
-import { EmailSender } from 'src/utils/emails.service';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 

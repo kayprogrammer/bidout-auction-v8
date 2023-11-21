@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { GeneralModule } from './modules/general.module';
 import { UserService } from '../prisma/services/accounts.service';
 import { PrismaService } from './prisma.service';
@@ -11,6 +11,7 @@ import settings from './config/config';
 import { join } from 'path';
 import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter"
 import { BullModule } from '@nestjs/bull';
+import { SnakeCaseMiddleware } from './middlewares';
 
 @Module({
   imports: [GeneralModule, AuthModule,
@@ -49,4 +50,8 @@ import { BullModule } from '@nestjs/bull';
     PrismaService
   ],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(SnakeCaseMiddleware).forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}
