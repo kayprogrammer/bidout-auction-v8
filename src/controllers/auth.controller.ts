@@ -6,13 +6,15 @@ import { returnResponse } from '../utils/responses';
 import { RegisterResponseSchema, RegisterSchema } from 'src/schemas/auth';
 import { RequestError } from '../exceptions.filter';
 import { EmailSender } from 'src/utils/emails.service';
+import { Queue } from 'bull';
+import { InjectQueue } from '@nestjs/bull';
 
 @Controller('api/v8/auth')
 @ApiTags('Auth')
 export class AuthController {
   constructor(
     private readonly userService: UserService,
-    private readonly emailSender: EmailSender,
+    @InjectQueue('email') private readonly emailSender: Queue
   ) { }
 
   @Post("/register")
@@ -27,7 +29,7 @@ export class AuthController {
     const user = await this.userService.create(data);
 
     // Send email
-    await this.emailSender.sendEmail(user, "activation")
+    await this.emailSender.add({user: user, emailType: "activation"})
 
     // Return response
     return returnResponse(

@@ -10,22 +10,33 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import settings from './config/config';
 import { join } from 'path';
 import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter"
+import { BullModule } from '@nestjs/bull';
 
 @Module({
-  imports: [GeneralModule, AuthModule, MailerModule.forRoot({
-    transport: {
-      host: settings.mailSenderHost,
-      auth: {
-        user: settings.mailSenderEmail,
-        pass: settings.mailSenderPassword,
+  imports: [GeneralModule, AuthModule,
+    BullModule.forRoot({
+      redis: {
+        host: settings.redisHost,
+        port: settings.redisPort,
       },
-      secure: true,
-      port: settings.mailSenderPort
-    },
-    template: {
-      dir: join(__dirname, 'templates'),
-      adapter: new HandlebarsAdapter()
-    },
+    }),
+    MailerModule.forRoot({
+      transport: {
+        host: settings.mailSenderHost,
+        auth: {
+          user: settings.mailSenderEmail,
+          pass: settings.mailSenderPassword,
+        },
+        secure: true,
+        port: settings.mailSenderPort
+      },
+      defaults: {
+        from: settings.mailSenderEmail
+      },
+      template: {
+        dir: join(__dirname, 'templates'),
+        adapter: new HandlebarsAdapter()
+      },
   })],
   controllers: [],
   providers: [

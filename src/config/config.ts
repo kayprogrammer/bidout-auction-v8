@@ -29,6 +29,8 @@ class Configuration {
     public cloudinaryCloudName: string;
     public cloudinaryApiKey: string;
     public cloudinaryApiSecret: string;
+    public redisHost: string;
+    public redisPort: number;
   
     constructor() {
       this.projectName = process.env.PROJECT_NAME || '';
@@ -61,6 +63,8 @@ class Configuration {
       this.cloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME || '';
       this.cloudinaryApiKey = process.env.CLOUDINARY_API_KEY || '';
       this.cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET || '';
+      this.redisHost = process.env.REDIS_HOST || '';
+      this.redisPort = parseInt(process.env.REDIS_PORT || '0');
     }
 }
   

@@ -2,9 +2,11 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { OtpService, UserService } from '../../prisma/services/accounts.service';
-import settings from '../config/config';
+import { Process, Processor } from '@nestjs/bull';
+import { Job } from 'bull';
 
 @Injectable()
+@Processor('email')
 export class EmailSender {
     constructor(
         private mail: MailerService, 
@@ -22,7 +24,12 @@ export class EmailSender {
 
         return emailData[emailType]
     }
-    async sendEmail(user: User, emailType: "activation" | "passwordReset" | "passwordResetSuccess" | "welcome") {
+
+    @Process()
+    async sendEmail(job: Job<{ user: User; emailType: "activation" | "passwordReset" | "passwordResetSuccess" | "welcome"}>) {
+        const { data } = job;
+        const { user, emailType } = data;
+
         const emailData = this.emailData(emailType)
         let code: number | null = null
         if (emailData.template === "email-activation" || emailData.template === "password-reset") {
@@ -34,7 +41,6 @@ export class EmailSender {
         // Send email
         await this.mail.sendMail({
             to: user.email,
-            from: settings.mailSenderEmail,
             subject: emailData.subject,
             template: emailData.template,
             context: {
