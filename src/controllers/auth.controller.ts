@@ -27,7 +27,7 @@ export class AuthController {
     const user = await this.userService.create(data);
 
     // Send email
-    await this.emailSender.sendActivationEmail(user)
+    await this.emailSender.sendEmail(user, "activation")
 
     // Return response
     return returnResponse(
