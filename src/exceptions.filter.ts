@@ -30,9 +30,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
             const errArray = errResponse.errors
 
             errArray.forEach((error: { [key: string]: any }) => {
-                var errValue = Object.values(error.constraints)[0];
-                if (Object.keys(error.constraints)[0] === "isNotEmpty"){
+                var errValue = Object.values(error.constraints)[0] as string;
+                const errType: string = Object.keys(error.constraints)[0]
+                if (errType === "isNotEmpty"){
                     errValue = "Field required"
+                } else if(errType === "maxLength") {
+                    const setNum = errValue.split(" ").splice(-2)[0]
+                    errValue = `${setNum} characters max`
+                }
+                else if(errType === "minLength") {
+                    const setNum = errValue.split(" ").splice(-2)[0]
+                    errValue = `${setNum} characters min`
                 }
                 errData[error.property] = errValue as string
             });
