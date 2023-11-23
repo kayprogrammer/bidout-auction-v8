@@ -26,7 +26,7 @@ export class RegisterSchema {
 
     @ApiProperty({ name: "terms_agreement", example: true })
     @IsBoolean({})
-      termsAgreement: string;
+    termsAgreement: boolean;
 }
 
 export class RegisterResponseSchema extends ResponseSchema {
