@@ -1,7 +1,7 @@
 import { ResponseSchema } from "./base";
 import { ApiProperty } from "@nestjs/swagger";
 import { userExample } from "./schema_examples";
-import { IsBoolean, IsEmail, IsNotEmpty, MaxLength, MinLength, ValidateIf, ValidationArguments } from "class-validator";
+import { IsBoolean, IsEmail, IsNotEmpty, IsPositive, MaxLength, MinLength, ValidateIf, ValidationArguments } from "class-validator";
 import { SubscriberSchema } from "./general";
 
 export class RegisterSchema {
@@ -27,6 +27,16 @@ export class RegisterSchema {
     @ApiProperty({ name: "terms_agreement", example: true })
     @IsBoolean({})
     termsAgreement: boolean;
+}
+
+export class VerifyOtpSchema {
+    @ApiProperty({ example: userExample.email })
+    @IsEmail({}, { message: "Enter a valid email" })
+    email: string;
+
+    @ApiProperty({ example: 123456 })
+    @IsPositive()
+    otp: number;
 }
 
 export class RegisterResponseSchema extends ResponseSchema {

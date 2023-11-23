@@ -9,7 +9,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
             status: "failure",
             message: message,
         }
-        if (data) respData.data = snakecaseKeys(data)
+        if (data && Object.keys(data).length) respData.data = snakecaseKeys(data)
         response
             .status(statusCode)
             .json(respData);

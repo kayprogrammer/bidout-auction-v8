@@ -1,7 +1,7 @@
 import { plainToInstance } from "class-transformer"
 import snakecaseKeys from 'snakecase-keys'
 
-export const returnResponse = <T, U, V>(schema: new () => T, message: string, data?: U | U[], dataSchema?: new () => V | undefined): T => {
+export const Response = <T, U, V>(schema: new () => T, message: string, data?: U | U[], dataSchema?: new () => V | undefined): T => {
   let resp: any = new schema()
   resp.message = message
   if (dataSchema && data !== undefined) {

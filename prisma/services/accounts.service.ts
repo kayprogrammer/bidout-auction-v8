@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../src/prisma.service';
 import { Otp, Prisma, User } from '@prisma/client';
 import { hashPassword } from '../../src/utils/utils';
@@ -39,7 +39,7 @@ export class OtpService {
 
     async getByUserId(id: string): Promise<Otp | null> {
         var otp: {} | null = await this.prisma.otp.findFirst({
-            where: {id}, select: { code: true }
+            where: {userId: id}, select: { id: true, code: true, updatedAt: true }
         });
         return otp as Otp
     }
@@ -50,13 +50,16 @@ export class OtpService {
         if (existingOtp) {
             return await this.update(data)
         }
-        const otp: Otp = await this.prisma.otp.create({data: data as any})
-        return otp
+        return await this.prisma.otp.create({data: data as any})
     }
 
     async update(data: Record<string, any>): Promise<Otp> {
         const otp: Otp = await this.prisma.otp.update({ where: { userId: data.userId }, data })
         return otp
+    }
+
+    async delete(id: string) {
+        await this.prisma.otp.delete({ where: { id } })
     }
 
     checkOtpExpiration(otp: Otp): boolean {

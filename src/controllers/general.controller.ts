@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { ReviewService, SiteDetailService, SubscriberService } from '../../prisma/services/general.service';
 import { ReviewSchema, ReviewsResponseSchema, SiteDetailResponseSchema, SiteDetailSchema, SubscriberResponseSchema, SubscriberSchema } from '../schemas/general';
-import { returnResponse } from '../utils/responses';
+import { Response } from '../utils/responses';
 
 @Controller('api/v8/general')
 @ApiTags('General')
@@ -21,7 +21,7 @@ export class GeneralController {
     const siteDetail = await this.siteDetailService.get();
 
     // Return response
-    return returnResponse(
+    return Response(
       SiteDetailResponseSchema, 
       'Site Details Fetched', 
       siteDetail, 
@@ -36,7 +36,7 @@ export class GeneralController {
     const subscriber = await this.subscriberService.getOrCreate(data);
 
     // Return response
-    return returnResponse(
+    return Response(
       SubscriberResponseSchema, 
       'Subscription successful', 
       subscriber, 
@@ -51,7 +51,7 @@ export class GeneralController {
     const reviews = await this.reviewService.getActive();
 
     // Return response
-    return returnResponse(
+    return Response(
       ReviewsResponseSchema, 
       'Reviews fetched', 
       reviews, 

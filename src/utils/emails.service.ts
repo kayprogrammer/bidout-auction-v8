@@ -1,5 +1,5 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { OtpService, UserService } from '../../prisma/services/accounts.service';
 import { Process, Processor } from '@nestjs/bull';
@@ -19,7 +19,7 @@ export class EmailSender {
             activation: {subject: "Activate your account", template: "email-activation"},
             passwordReset: {subject: "Reset your password", template: "password-reset"},
             passwordResetSuccess: {subject: "Password reset successfully", template: "password-reset-success"},
-            welcome: {subject: "Account verified", template: "Account verified"}
+            welcome: {subject: "Account verified", template: "welcome"}
         }
 
         return emailData[emailType]
