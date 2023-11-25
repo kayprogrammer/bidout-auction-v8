@@ -1,17 +1,20 @@
 import { AuthController } from '../controllers/auth.controller';
-import { UserService } from '../../prisma/services/accounts.service';
+import { UserService, OtpService } from '../../prisma/services/accounts.service';
 import { PrismaService } from '../prisma.service';
 import { RequestError } from '../exceptions.filter';
+import { User } from '@prisma/client';
 
 describe('AuthController', () => {
   let authController: AuthController;
   let userService: UserService;
+  let otpService: OtpService;
   let emailSender: any
 
   beforeEach(() => {
     userService = new UserService(new PrismaService());
+    otpService = new OtpService(new PrismaService());
     emailSender = { add: jest.fn() }
-    authController = new AuthController(userService, emailSender);
+    authController = new AuthController(userService, otpService, emailSender);
   });
 
   describe('register', () => {
@@ -28,6 +31,35 @@ describe('AuthController', () => {
       expect(async () => {
         await authController.register(registerData);
       }).rejects.toThrow(RequestError);
+    });
+  });
+  describe('verifyEmail', () => {
+    it("Should successfully verify a user's email", async () => {
+      const verificationData = {email: "incorrect@email.com", otp: 123456}
+      emailSender.add.mockResolvedValueOnce(0);
+
+      // Confirm an error is raised if the email is incorrect
+      await expect(authController.verifyEmail(verificationData)).rejects.toMatchObject({
+        status: 404,
+        message: "Incorrect Email"
+      });
+
+      // Create otp
+      verificationData.email = "johndoe@email.com"
+      const user = await userService.getByEmail(verificationData.email) as User
+      const otp = await otpService.create(user.id) // Create otp
+
+      // Confirm an error is raised if the otp is incorrect
+      await expect(authController.verifyEmail(verificationData)).rejects.toMatchObject({
+        status: 400,
+        message: "Incorrect Otp"
+      });
+
+      // Confirm if the email was verified successfully
+      verificationData.otp = otp.code
+      const result = await authController.verifyEmail(verificationData);
+      expect(result).toHaveProperty('status', 'success');
+      expect(result).toHaveProperty('message', 'Account verification successful');
     });
   });
 });

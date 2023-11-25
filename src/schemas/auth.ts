@@ -29,11 +29,7 @@ export class RegisterSchema {
     termsAgreement: boolean;
 }
 
-export class VerifyOtpSchema {
-    @ApiProperty({ example: userExample.email })
-    @IsEmail({}, { message: "Enter a valid email" })
-    email: string;
-
+export class VerifyOtpSchema extends SubscriberSchema {
     @ApiProperty({ example: 123456 })
     @IsPositive()
     otp: number;

@@ -44,7 +44,7 @@ export class AuthController {
   @Post("/verify-email")
   @ApiOperation({ summary: "Verify a user's email", description: "This endpoint verifies a user's email" })
   @ApiResponse({ status: 200, type: ResponseSchema })
-  async verify_email(@Body() data: VerifyOtpSchema): Promise<ResponseSchema> {
+  async verifyEmail(@Body() data: VerifyOtpSchema): Promise<ResponseSchema> {
     // Validate user
     const userByEmail = await this.userService.getByEmail(data.email)
     if (!userByEmail) {
@@ -83,7 +83,7 @@ export class AuthController {
   @Post("/resend-verification-email")
   @ApiOperation({ summary: "Resend Verification Email", description: "This endpoint resends new otp to the user's email" })
   @ApiResponse({ status: 200, type: ResponseSchema })
-  async resend_verification_email(@Body() data: SubscriberSchema): Promise<ResponseSchema> {
+  async resendVerificationEmail(@Body() data: SubscriberSchema): Promise<ResponseSchema> {
     // Validate user
     const userByEmail = await this.userService.getByEmail(data.email)
     if (!userByEmail) {
