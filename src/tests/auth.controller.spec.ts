@@ -62,4 +62,30 @@ describe('AuthController', () => {
       expect(result).toHaveProperty('message', 'Account verification successful');
     });
   });
+
+  describe('resendVerificationEmail', () => {
+    it("Should successfully resend a verification email", async () => {
+      const emailData = {email: "incorrect@email.com"}
+      emailSender.add.mockResolvedValueOnce(0);
+
+      // Confirm an error is raised if the email is incorrect
+      await expect(authController.resendVerificationEmail(emailData)).rejects.toMatchObject({
+        status: 404,
+        message: "Incorrect Email"
+      });
+
+      // Confirm if the email was already verfied (previous test already made sure it was)
+      emailData.email = "johndoe@email.com"
+      let result = await authController.resendVerificationEmail(emailData);
+      expect(result).toHaveProperty('status', 'success');
+      expect(result).toHaveProperty('message', 'Email already verified');
+
+      // Confirm if the email was sent successfully
+      const user = await userService.getByEmail(emailData.email) as User
+      await userService.update({id: user.id, isEmailVerified: false}) // Set verfication to false     
+      result = await authController.resendVerificationEmail(emailData);
+      expect(result).toHaveProperty('status', 'success');
+      expect(result).toHaveProperty('message', 'Verification email sent');
+    });
+  });
 });

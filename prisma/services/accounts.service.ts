@@ -20,7 +20,7 @@ export class UserService {
         return user
     }
 
-    async update(data: User): Promise<User> {
+    async update(data: Record<string,any>): Promise<User> {
         if (data.password) {
             data.password = await hashPassword(data.password)
         }
