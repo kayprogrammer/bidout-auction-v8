@@ -35,6 +35,12 @@ export class VerifyOtpSchema extends SubscriberSchema {
     otp: number;
 }
 
+export class SetNewPasswordSchema extends VerifyOtpSchema {
+    @ApiProperty({ example: "newstrongpassword" })
+    @MinLength(8)
+    password: string;
+}
+
 export class RegisterResponseSchema extends ResponseSchema {
     @ApiProperty()
     data: SubscriberSchema;

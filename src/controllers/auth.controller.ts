@@ -3,7 +3,7 @@ import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { OtpService, UserService } from '../../prisma/services/accounts.service';
 import { SubscriberSchema } from '../schemas/general';
 import { Response } from '../utils/responses';
-import { RegisterResponseSchema, RegisterSchema, VerifyOtpSchema } from '../schemas/auth';
+import { RegisterResponseSchema, RegisterSchema, SetNewPasswordSchema, VerifyOtpSchema } from '../schemas/auth';
 import { RequestError } from '../exceptions.filter';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
@@ -124,6 +124,41 @@ export class AuthController {
     return Response(
       ResponseSchema, 
       'Password otp sent',
+    )
+  }
+
+  @Post("/set-new-password")
+  @ApiOperation({ summary: "Set New Password", description: "This endpoint verifies the password reset otp" })
+  @ApiResponse({ status: 200, type: ResponseSchema })
+  async setNewPassword(@Body() data: SetNewPasswordSchema): Promise<ResponseSchema> {
+    // Validate user
+    const userByEmail = await this.userService.getByEmail(data.email)
+    if (!userByEmail) {
+      throw new RequestError('Incorrect Email', 404);
+    }
+
+    // Validate otp
+    const otp = await this.otpService.getByUserId(userByEmail.id)
+    if (!otp || otp.code !== data.otp) {
+      throw new RequestError("Incorrect Otp")
+    }
+    if (this.otpService.checkOtpExpiration(otp)) {
+      throw new RequestError("Expired Otp")
+    }
+    userByEmail.isEmailVerified = true
+    await this.userService.update(userByEmail)
+    await this.otpService.delete(otp.id)
+
+    // Update user
+    await this.userService.update({id: userByEmail.id, password: data.password})
+
+    // Send verification email
+    await this.emailSender.add({user: userByEmail, emailType: "passwordResetSuccess"})
+    
+    // Return response
+    return Response(
+      ResponseSchema, 
+      'Password reset successful',
     )
   }
 }
