@@ -106,4 +106,24 @@ export class AuthController {
       'Verification email sent',
     )
   }
+
+  @Post("/send-password-reset-otp")
+  @ApiOperation({ summary: "Send Password Reset Otp", description: "This endpoint sends new password reset otp to the user's email" })
+  @ApiResponse({ status: 200, type: ResponseSchema })
+  async sendPasswordResetOtp(@Body() data: SubscriberSchema): Promise<ResponseSchema> {
+    // Validate user
+    const userByEmail = await this.userService.getByEmail(data.email)
+    if (!userByEmail) {
+      throw new RequestError('Incorrect Email', 404);
+    }
+
+    // Send verification email
+    await this.emailSender.add({user: userByEmail, emailType: "passwordReset"})
+    
+    // Return response
+    return Response(
+      ResponseSchema, 
+      'Password otp sent',
+    )
+  }
 }
