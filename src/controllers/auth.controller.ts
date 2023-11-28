@@ -9,6 +9,7 @@ import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 import { ResponseSchema } from '../schemas/base';
 import { checkPassword } from '../utils/utils';
+import { AuthService } from '../utils/auth.service';
 
 @Controller('api/v8/auth')
 @ApiTags('Auth')
@@ -16,6 +17,8 @@ export class AuthController {
   constructor(
     private readonly userService: UserService,
     private readonly otpService: OtpService,
+    private readonly authService: AuthService,
+
     @InjectQueue('email') private readonly emailSender: Queue
   ) { }
 
@@ -168,13 +171,15 @@ export class AuthController {
   @ApiResponse({ status: 200, type: LoginResponseSchema })
   async login(@Body() data: LoginSchema): Promise<LoginResponseSchema> {
     // Validate credentials
-    const user = await this.userService.getByEmail(data.email)
+    let user = await this.userService.getByEmail(data.email)
     if (!user || !(await checkPassword(data.password, user.password))) throw new RequestError('Invalid credentials', 401);
 
     if (!user.isEmailVerified) throw new RequestError('Verify your email first', 401);
 
     // Create Jwt tokens
-    await this.userService.update({id: user.id, access: access, refresh: refresh})
+    const access = this.authService.createAccessToken({userId: user.id})
+    const refresh = this.authService.createRefreshToken() 
+    user = await this.userService.update({id: user.id, access: access, refresh: refresh})
 
     // Return response
     return Response(

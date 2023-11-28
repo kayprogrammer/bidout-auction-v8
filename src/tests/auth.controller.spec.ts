@@ -3,18 +3,21 @@ import { UserService, OtpService } from '../../prisma/services/accounts.service'
 import { PrismaService } from '../prisma.service';
 import { RequestError } from '../exceptions.filter';
 import { User } from '@prisma/client';
+import { AuthService } from '../utils/auth.service';
 
 describe('AuthController', () => {
   let authController: AuthController;
   let userService: UserService;
   let otpService: OtpService;
   let emailSender: any
+  let authService: AuthService
 
   beforeEach(() => {
     userService = new UserService(new PrismaService());
     otpService = new OtpService(new PrismaService());
+    authService = new AuthService(userService);
     emailSender = { add: jest.fn() }
-    authController = new AuthController(userService, otpService, emailSender);
+    authController = new AuthController(userService, emailSender, authService, otpService);
   });
 
   describe('register', () => {
