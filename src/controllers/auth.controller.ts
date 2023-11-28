@@ -3,11 +3,12 @@ import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { OtpService, UserService } from '../../prisma/services/accounts.service';
 import { SubscriberSchema } from '../schemas/general';
 import { Response } from '../utils/responses';
-import { RegisterResponseSchema, RegisterSchema, SetNewPasswordSchema, VerifyOtpSchema } from '../schemas/auth';
+import { LoginResponseSchema, LoginSchema, RegisterResponseSchema, RegisterSchema, SetNewPasswordSchema, TokensResponseSchema, VerifyOtpSchema } from '../schemas/auth';
 import { RequestError } from '../exceptions.filter';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 import { ResponseSchema } from '../schemas/base';
+import { checkPassword } from '../utils/utils';
 
 @Controller('api/v8/auth')
 @ApiTags('Auth')
@@ -159,6 +160,28 @@ export class AuthController {
     return Response(
       ResponseSchema, 
       'Password reset successful',
+    )
+  }
+
+  @Post("/login")
+  @ApiOperation({ summary: "Login User", description: "This endpoint generates new access and refresh tokens for authentication" })
+  @ApiResponse({ status: 200, type: LoginResponseSchema })
+  async login(@Body() data: LoginSchema): Promise<LoginResponseSchema> {
+    // Validate credentials
+    const user = await this.userService.getByEmail(data.email)
+    if (!user || !(await checkPassword(data.password, user.password))) throw new RequestError('Invalid credentials', 401);
+
+    if (!user.isEmailVerified) throw new RequestError('Verify your email first', 401);
+
+    // Create Jwt tokens
+    await this.userService.update({id: user.id, access: access, refresh: refresh})
+
+    // Return response
+    return Response(
+      LoginResponseSchema, 
+      'Login successful',
+      user,
+      TokensResponseSchema
     )
   }
 }

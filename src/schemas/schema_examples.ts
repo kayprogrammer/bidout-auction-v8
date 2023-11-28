@@ -17,3 +17,7 @@ export const userExample = {
     avatar: "https://img.com",
     password: "strongpassword"
 }
+
+export const tokensExample = {
+    access: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjMsInVzZXJuYW1lIjoiZXhhbXBsZV91c2VyIiwiZXhwIjoxNjA5NDU5MjAwfQ.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+}

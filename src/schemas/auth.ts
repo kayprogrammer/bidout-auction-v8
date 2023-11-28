@@ -1,6 +1,6 @@
 import { ResponseSchema } from "./base";
 import { ApiProperty } from "@nestjs/swagger";
-import { userExample } from "./schema_examples";
+import { tokensExample, userExample } from "./schema_examples";
 import { IsBoolean, IsEmail, IsNotEmpty, IsPositive, MaxLength, MinLength, ValidateIf, ValidationArguments } from "class-validator";
 import { SubscriberSchema } from "./general";
 
@@ -35,6 +35,12 @@ export class VerifyOtpSchema extends SubscriberSchema {
     otp: number;
 }
 
+export class LoginSchema extends SubscriberSchema {
+    @ApiProperty({ example: userExample.password })
+    @IsNotEmpty()
+    password: string;
+}
+
 export class SetNewPasswordSchema extends VerifyOtpSchema {
     @ApiProperty({ example: "newstrongpassword" })
     @MinLength(8)
@@ -44,4 +50,17 @@ export class SetNewPasswordSchema extends VerifyOtpSchema {
 export class RegisterResponseSchema extends ResponseSchema {
     @ApiProperty()
     data: SubscriberSchema;
+}
+
+export class TokensResponseSchema {
+    @ApiProperty({ example: tokensExample.access })
+    access: string;
+
+    @ApiProperty({ example: tokensExample.access })
+    refresh: string;
+}
+
+export class LoginResponseSchema extends ResponseSchema {
+    @ApiProperty()
+    data: TokensResponseSchema;
 }
