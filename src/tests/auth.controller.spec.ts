@@ -17,7 +17,7 @@ describe('AuthController', () => {
     otpService = new OtpService(new PrismaService());
     authService = new AuthService(userService);
     emailSender = { add: jest.fn() }
-    authController = new AuthController(userService, emailSender, authService, otpService);
+    authController = new AuthController(userService, otpService, authService, emailSender);
   });
 
   describe('register', () => {
@@ -89,6 +89,26 @@ describe('AuthController', () => {
       result = await authController.resendVerificationEmail(emailData);
       expect(result).toHaveProperty('status', 'success');
       expect(result).toHaveProperty('message', 'Verification email sent');
+    });
+  });
+
+  describe('sendPasswordResetOtp', () => {
+    it("Should successfully send password reset otp email", async () => {
+      const emailData = {email: "incorrect@email.com"}
+      emailSender.add.mockResolvedValueOnce(0);
+
+      // Confirm an error is raised if the email is incorrect
+      await expect(authController.sendPasswordResetOtp(emailData)).rejects.toMatchObject({
+        status: 404,
+        message: "Incorrect Email"
+      });
+
+      emailData.email = "johndoe@email.com"
+      const result = await authController.sendPasswordResetOtp(emailData);
+
+      // Confirm if the email was sent successfully
+      expect(result).toHaveProperty('status', 'success');
+      expect(result).toHaveProperty('message', 'Password otp sent');
     });
   });
 });

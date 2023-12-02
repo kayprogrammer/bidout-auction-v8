@@ -121,7 +121,7 @@ export class AuthController {
       throw new RequestError('Incorrect Email', 404);
     }
 
-    // Send verification email
+    // Send password reset email
     await this.emailSender.add({user: userByEmail, emailType: "passwordReset"})
     
     // Return response
