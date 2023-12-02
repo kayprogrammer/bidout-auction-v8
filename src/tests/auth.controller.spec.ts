@@ -111,4 +111,34 @@ describe('AuthController', () => {
       expect(result).toHaveProperty('message', 'Password otp sent');
     });
   });
+
+  describe('setNewPassword', () => {
+    it("Should successfully set a new password successfully", async () => {
+      const verificationData = {email: "incorrect@email.com", otp: 123456, password: "newtestpassword"}
+      emailSender.add.mockResolvedValueOnce(0);
+
+      // Confirm an error is raised if the email is incorrect
+      await expect(authController.setNewPassword(verificationData)).rejects.toMatchObject({
+        status: 404,
+        message: "Incorrect Email"
+      });
+
+      // Create otp
+      verificationData.email = "johndoe@email.com"
+      const user = await userService.getByEmail(verificationData.email) as User
+      const otp = await otpService.create(user.id) // Create otp
+
+      // Confirm an error is raised if the otp is incorrect
+      await expect(authController.setNewPassword(verificationData)).rejects.toMatchObject({
+        status: 400,
+        message: "Incorrect Otp"
+      });
+
+      // Confirm if the password was changed successfully
+      verificationData.otp = otp.code
+      const result = await authController.setNewPassword(verificationData);
+      expect(result).toHaveProperty('status', 'success');
+      expect(result).toHaveProperty('message', 'Password reset successful');
+    });
+  });
 });
