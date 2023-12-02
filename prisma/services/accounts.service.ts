@@ -5,6 +5,13 @@ import { hashPassword } from '../../src/utils/utils';
 import { randomInt } from 'crypto';
 import settings from '../../src/config/config'; 
 
+const userData: Prisma.UserCreateInput = {
+    firstName: "Test",
+    lastName: "User",
+    email: "testuser@email.com",
+    password: "testpassword",
+} 
+
 @Injectable()
 export class UserService {
     constructor(private prisma: PrismaService) { }
@@ -35,6 +42,31 @@ export class UserService {
 
     fullName(user: User): string {
         return `${user.firstName} ${user.lastName}`
+    }
+
+    // -------------------
+    // Test data
+    // -------------------
+
+    // User
+    async testUser(): Promise<User> {
+        return await this.create(userData)
+    }
+
+    // Verified user
+    async testVerifiedUser(): Promise<User> {
+        userData.lastName = "VerifiedUser"
+        userData.email = "testverifieduser@email.com"
+        userData.isEmailVerified = true
+        return await this.create(userData)
+    }
+
+    // Another Verified user
+    async testAnotherVerifiedUser(): Promise<User> {
+        userData.lastName = "AnotherVerifiedUser"
+        userData.email = "anothertestverifieduser@email.com"
+        userData.isEmailVerified = true
+        return await this.create(userData)
     }
 }
 

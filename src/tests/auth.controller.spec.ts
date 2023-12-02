@@ -114,31 +114,61 @@ describe('AuthController', () => {
 
   describe('setNewPassword', () => {
     it("Should successfully set a new password successfully", async () => {
-      const verificationData = {email: "incorrect@email.com", otp: 123456, password: "newtestpassword"}
+      const passwordResetData = {email: "incorrect@email.com", otp: 123456, password: "newtestpassword"}
       emailSender.add.mockResolvedValueOnce(0);
 
       // Confirm an error is raised if the email is incorrect
-      await expect(authController.setNewPassword(verificationData)).rejects.toMatchObject({
+      await expect(authController.setNewPassword(passwordResetData)).rejects.toMatchObject({
         status: 404,
         message: "Incorrect Email"
       });
 
       // Create otp
-      verificationData.email = "johndoe@email.com"
-      const user = await userService.getByEmail(verificationData.email) as User
+      passwordResetData.email = "johndoe@email.com"
+      const user = await userService.getByEmail(passwordResetData.email) as User
       const otp = await otpService.create(user.id) // Create otp
 
       // Confirm an error is raised if the otp is incorrect
-      await expect(authController.setNewPassword(verificationData)).rejects.toMatchObject({
+      await expect(authController.setNewPassword(passwordResetData)).rejects.toMatchObject({
         status: 400,
         message: "Incorrect Otp"
       });
 
       // Confirm if the password was changed successfully
-      verificationData.otp = otp.code
-      const result = await authController.setNewPassword(verificationData);
+      passwordResetData.otp = otp.code
+      const result = await authController.setNewPassword(passwordResetData);
       expect(result).toHaveProperty('status', 'success');
       expect(result).toHaveProperty('message', 'Password reset successful');
+    });
+  });
+
+  describe('login', () => {
+    it("Should successfully generate access and refresh tokens for user", async () => {
+      const loginData = {email: "incorrect@email.com", password: "incorrect"}
+
+      // Confirm an error is raised if the credentials are incorrect
+      await expect(authController.login(loginData)).rejects.toMatchObject({
+        status: 401,
+        message: "Invalid credentials"
+      });
+      
+      const user = await userService.testUser()
+      loginData.email = user.email
+      loginData.password = "testpassword"
+
+      // Confirm an error is raised if the user is unverified
+      await expect(authController.login(loginData)).rejects.toMatchObject({
+        status: 401,
+        message: "Verify your email first"
+      });
+      
+      await userService.update({id: user.id, isEmailVerified: true})
+      const result = await authController.login(loginData);
+
+      // Confirm if the email was sent successfully
+      expect(result).toHaveProperty('status', 'success');
+      expect(result).toHaveProperty('message', 'Login successful');
+      expect(result).toHaveProperty('data', {access: expect.any(String), refresh: expect.any(String)});
     });
   });
 });

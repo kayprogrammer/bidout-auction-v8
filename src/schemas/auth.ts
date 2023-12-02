@@ -3,6 +3,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { tokensExample, userExample } from "./schema_examples";
 import { IsBoolean, IsEmail, IsNotEmpty, IsPositive, MaxLength, MinLength, ValidateIf, ValidationArguments } from "class-validator";
 import { SubscriberSchema } from "./general";
+import { Expose } from "class-transformer";
 
 export class RegisterSchema {
     @ApiProperty({ name: "first_name", example: userExample.firstName })
@@ -54,9 +55,11 @@ export class RegisterResponseSchema extends ResponseSchema {
 
 export class TokensResponseSchema {
     @ApiProperty({ example: tokensExample.access })
+    @Expose()
     access: string;
 
     @ApiProperty({ example: tokensExample.access })
+    @Expose()
     refresh: string;
 }
 
