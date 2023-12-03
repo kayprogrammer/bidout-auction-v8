@@ -3,6 +3,7 @@ import settings from '../config/config';
 import { randomStr } from './utils';
 import { UserService } from '../../prisma/services/accounts.service';
 import { Injectable } from '@nestjs/common';
+import { User } from '@prisma/client';
 
 const ALGORITHM = "HS256"
 
@@ -33,7 +34,7 @@ export class AuthService {
         });
     }
 
-    async decodeJWT(token: string) {
+    async decodeJWT(token: string): Promise<User | null> {
         jwt.verify(token, settings.secretKey, async (err, decoded) => {
             if (err || !decoded) return null
             decoded = decoded as Record<string, any>
@@ -41,5 +42,6 @@ export class AuthService {
             if (!user || user.access !== token) return null
             return user
         });
+        return null
     }
 }

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../src/prisma.service';
-import { Otp, Prisma, User } from '@prisma/client';
+import { GuestUser, Otp, Prisma, User } from '@prisma/client';
 import { hashPassword } from '../../src/utils/utils';
 import { randomInt } from 'crypto';
 import settings from '../../src/config/config'; 
@@ -44,6 +44,10 @@ export class UserService {
         return `${user.firstName} ${user.lastName}`
     }
 
+    async getGuestUserById(id: string): Promise<GuestUser | null> {
+        const guestUser: GuestUser | null = await this.prisma.guestUser.findFirst({ where: {id}})
+        return guestUser
+    }
     // -------------------
     // Test data
     // -------------------

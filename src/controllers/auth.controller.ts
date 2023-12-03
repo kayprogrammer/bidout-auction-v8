@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { OtpService, UserService } from '../../prisma/services/accounts.service';
 import { SubscriberSchema } from '../schemas/general';
@@ -187,6 +187,18 @@ export class AuthController {
       'Login successful',
       user,
       TokensResponseSchema
+    )
+  }
+
+  @Post("/logout")
+  @ApiOperation({ summary: "Logout User", description: "This endpoint logs out a user" })
+  @ApiResponse({ status: 200, type: ResponseSchema })
+  async logout(@Req() req: any): Promise<ResponseSchema> {
+    await this.userService.update({id: req.user.id, access: null, refresh: null})
+    // Return response
+    return Response(
+      ResponseSchema, 
+      'Logout successful',
     )
   }
 }
