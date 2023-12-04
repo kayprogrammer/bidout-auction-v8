@@ -29,6 +29,8 @@ async function bootstrap() {
     .setTitle(settings.projectName)
     .setDescription('A simple bidding API built with NestJS')
     .setVersion('8.0')
+    .addApiKey({name: "GuestUserId", type: "apiKey", in: "header", description: "For guest watchlists. Get ID from '/api/v8/listings/watchlist' POST endpoint"})
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('', app, document);

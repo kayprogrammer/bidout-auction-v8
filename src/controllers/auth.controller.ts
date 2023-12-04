@@ -1,15 +1,16 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
-import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiResponse, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { OtpService, UserService } from '../../prisma/services/accounts.service';
 import { SubscriberSchema } from '../schemas/general';
 import { Response } from '../utils/responses';
-import { LoginResponseSchema, LoginSchema, RegisterResponseSchema, RegisterSchema, SetNewPasswordSchema, TokensResponseSchema, VerifyOtpSchema } from '../schemas/auth';
+import { LoginResponseSchema, LoginSchema, RegisterResponseSchema, RegisterSchema, SetNewPasswordSchema, TokenRefreshSchema, TokensResponseSchema, VerifyOtpSchema } from '../schemas/auth';
 import { RequestError } from '../exceptions.filter';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 import { ResponseSchema } from '../schemas/base';
 import { checkPassword } from '../utils/utils';
 import { AuthService } from '../utils/auth.service';
+import { AuthGuard } from './deps';
 
 @Controller('api/v8/auth')
 @ApiTags('Auth')
@@ -168,7 +169,7 @@ export class AuthController {
 
   @Post("/login")
   @ApiOperation({ summary: "Login User", description: "This endpoint generates new access and refresh tokens for authentication" })
-  @ApiResponse({ status: 200, type: LoginResponseSchema })
+  @ApiResponse({ status: 201, type: LoginResponseSchema })
   async login(@Body() data: LoginSchema): Promise<LoginResponseSchema> {
     // Validate credentials
     let user = await this.userService.getByEmail(data.email)
@@ -190,9 +191,34 @@ export class AuthController {
     )
   }
 
-  @Post("/logout")
+  @Post("/refresh")
+  @ApiOperation({ summary: "Refresh Tokens", description: "This endpoint refreshes user access and refresh tokens" })
+  @ApiResponse({ status: 201, type: LoginResponseSchema })
+  async refresh(@Body() data: TokenRefreshSchema): Promise<LoginResponseSchema> {
+    // Validate token
+    let refresh = data.refresh
+    let user = await this.userService.getByRefreshToken(refresh)
+    if (!user || !(await this.authService.verifyRefreshToken(refresh))) throw new RequestError('Refresh token is invalid or expired', 401);
+
+    // Create New Jwt tokens
+    const access = this.authService.createAccessToken({userId: user.id})
+    refresh = this.authService.createRefreshToken() 
+    user = await this.userService.update({id: user.id, access: access, refresh: refresh})
+
+    // Return response
+    return Response(
+      LoginResponseSchema, 
+      'Tokens refresh successful',
+      user,
+      TokensResponseSchema
+    )
+  }
+
+  @Get("/logout")
   @ApiOperation({ summary: "Logout User", description: "This endpoint logs out a user" })
   @ApiResponse({ status: 200, type: ResponseSchema })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   async logout(@Req() req: any): Promise<ResponseSchema> {
     await this.userService.update({id: req.user.id, access: null, refresh: null})
     // Return response

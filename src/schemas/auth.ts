@@ -48,6 +48,12 @@ export class SetNewPasswordSchema extends VerifyOtpSchema {
     password: string;
 }
 
+export class TokenRefreshSchema {
+    @ApiProperty({ example: tokensExample.access })
+    @IsNotEmpty()
+    refresh: string;
+}
+
 export class RegisterResponseSchema extends ResponseSchema {
     @ApiProperty()
     data: SubscriberSchema;

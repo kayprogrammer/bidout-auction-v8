@@ -5,6 +5,18 @@ import { UserService } from '../../prisma/services/accounts.service';
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 
+const verifyAsync = (token: string, secret: string) => {
+    return new Promise((resolve, reject) => {
+        jwt.verify(token, secret, {}, (err, payload) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(payload);
+            }
+        });
+    });
+}
+
 const ALGORITHM = "HS256"
 
 @Injectable()
@@ -24,24 +36,34 @@ export class AuthService {
         return jwt.sign(payload, settings.secretKey, { algorithm: ALGORITHM });
     }
 
-    verifyRefreshToken(token: string) {
-        jwt.verify(token, settings.secretKey, (err) => {
-            if (err) {
-                return false
-            } else {
-                return true
-            }
-        });
+    async verifyRefreshToken(token: string) {
+        try {
+          const decoded = await verifyAsync(token, settings.secretKey) as any;
+          return true
+        } catch (error) {
+            return false;
+        }
     }
 
     async decodeJWT(token: string): Promise<User | null> {
-        jwt.verify(token, settings.secretKey, async (err, decoded) => {
-            if (err || !decoded) return null
-            decoded = decoded as Record<string, any>
-            const user = await this.userService.getById(decoded?.userId)
-            if (!user || user.access !== token) return null
-            return user
-        });
-        return null
+        try {
+          const decoded = await verifyAsync(token, settings.secretKey) as { userId?: string };;
+
+          const userId = decoded?.userId;
+      
+          if (!userId) {
+            return null;
+          }
+      
+          const user = await this.userService.getById(userId);
+      
+          if (!user || user.access !== token) {
+            return null;
+          }
+      
+          return user;
+        } catch (error) {
+          return null;
+        }
     }
 }

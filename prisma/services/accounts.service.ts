@@ -26,6 +26,11 @@ export class UserService {
         return user
     }
 
+    async getByRefreshToken(refresh: string): Promise<User | null> {
+        const user: User | null = await this.prisma.user.findFirst({ where: {refresh} });
+        return user
+    }
+
     async create(data: Prisma.UserCreateInput): Promise<User> {
         data.password = await hashPassword(data.password)
         const user: User = await this.prisma.user.create({ data })
