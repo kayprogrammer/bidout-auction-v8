@@ -198,7 +198,9 @@ export class AuthController {
     // Validate token
     let refresh = data.refresh
     let user = await this.userService.getByRefreshToken(refresh)
-    if (!user || !(await this.authService.verifyRefreshToken(refresh))) throw new RequestError('Refresh token is invalid or expired', 401);
+    if (!user || !(await this.authService.verifyRefreshToken(refresh))) {
+      throw new RequestError('Refresh token is invalid or expired', 401);
+    }
 
     // Create New Jwt tokens
     const access = this.authService.createAccessToken({userId: user.id})

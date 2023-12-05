@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../src/prisma.service';
 import { GuestUser, Otp, Prisma, User } from '@prisma/client';
 import { hashPassword } from '../../src/utils/utils';
@@ -59,7 +59,11 @@ export class UserService {
 
     // User
     async testUser(): Promise<User> {
-        return await this.create(userData)
+        let user = await this.getByEmail(userData.email)
+        if (!user) {
+            user = await this.create(userData) 
+        }
+        return user
     }
 
     // Verified user
@@ -67,7 +71,11 @@ export class UserService {
         userData.lastName = "VerifiedUser"
         userData.email = "testverifieduser@email.com"
         userData.isEmailVerified = true
-        return await this.create(userData)
+        let user = await this.getByEmail(userData.email)
+        if (!user) {
+            user = await this.create(userData) 
+        }
+        return user
     }
 
     // Another Verified user
@@ -75,7 +83,12 @@ export class UserService {
         userData.lastName = "AnotherVerifiedUser"
         userData.email = "anothertestverifieduser@email.com"
         userData.isEmailVerified = true
-        return await this.create(userData)
+
+        let user = await this.getByEmail(userData.email)
+        if (!user) {
+            user = await this.create(userData) 
+        }
+        return user
     }
 }
 

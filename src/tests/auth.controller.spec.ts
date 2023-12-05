@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma.service';
 import { RequestError } from '../exceptions.filter';
 import { User } from '@prisma/client';
 import { AuthService } from '../utils/auth.service';
+import { Request } from '@nestjs/common';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -169,6 +170,56 @@ describe('AuthController', () => {
       expect(result).toHaveProperty('status', 'success');
       expect(result).toHaveProperty('message', 'Login successful');
       expect(result).toHaveProperty('data', {access: expect.any(String), refresh: expect.any(String)});
+    });
+  });
+
+  describe('refresh', () => {
+    it("Should successfully refresh user tokens", async () => {
+      const refreshData = {refresh: "invalid-token"}
+
+      // Confirm an error is raised if the token is invalid
+      await expect(authController.refresh(refreshData)).rejects.toMatchObject({
+        status: 401,
+        message: "Refresh token is invalid or expired"
+      });
+      
+      const user = await userService.testVerifiedUser()
+      
+      const access = authService.createAccessToken({userId: user.id})
+      const refresh = authService.createRefreshToken() 
+      await userService.update({id: user.id, access: access, refresh: refresh})
+
+      refreshData.refresh = refresh
+      const result = await authController.refresh(refreshData);
+
+      // Confirm if the email was sent successfully
+      expect(result).toHaveProperty('status', 'success');
+      expect(result).toHaveProperty('message', 'Tokens refresh successful');
+      expect(result).toHaveProperty('data', {access: expect.any(String), refresh: expect.any(String)});
+    });
+  });
+
+  describe('logout', () => {
+    it("Should successfully logout user", async () => {
+      const request: Record<string,any> = { headers: {Authorization: `Bearer invalid_token`} }
+      // Confirm an error is raised if the token is invalid
+      await expect(authController.logout(request)).rejects.toMatchObject({
+        status: 401,
+        message: "Auth token is invalid or expired"
+      });
+      
+      const user = await userService.testVerifiedUser()
+      
+      const access = authService.createAccessToken({userId: user.id})
+      const refresh = authService.createRefreshToken() 
+      await userService.update({id: user.id, access: access, refresh: refresh})
+
+      request.headers = {Authorization: `Bearer ${access}`}
+      const result = await authController.logout(request);
+
+      // Confirm if the email was sent successfully
+      expect(result).toHaveProperty('status', 'success');
+      expect(result).toHaveProperty('message', 'Logout successful');
     });
   });
 });
