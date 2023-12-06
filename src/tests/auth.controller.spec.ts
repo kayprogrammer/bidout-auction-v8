@@ -201,7 +201,7 @@ describe('AuthController', () => {
 
   describe('logout', () => {
     it("Should successfully logout user", async () => {
-      const request: Record<string,any> = { headers: {Authorization: `Bearer invalid_token`} }
+      const request: Record<string,any> = { headers: {authorization: `Bearer invalid_token`} }
       // Confirm an error is raised if the token is invalid
       await expect(authController.logout(request)).rejects.toMatchObject({
         status: 401,
@@ -214,7 +214,7 @@ describe('AuthController', () => {
       const refresh = authService.createRefreshToken() 
       await userService.update({id: user.id, access: access, refresh: refresh})
 
-      request.headers = {Authorization: `Bearer ${access}`}
+      request.headers = {authorization: `Bearer ${access}`}
       const result = await authController.logout(request);
 
       // Confirm if the email was sent successfully
