@@ -1,14 +1,11 @@
 import { UserService, OtpService } from '../../prisma/services/accounts.service';
 import { PrismaService } from '../prisma.service';
-import { RequestError } from '../exceptions.filter';
 import { User } from '@prisma/client';
 import { AuthService } from '../utils/auth.service';
 import supertest from 'supertest';
 import { AuthModule } from '../modules/auth.module';
-import { Test } from '@nestjs/testing';
 import { testGet, testPost } from './utils';
 import { setupServer, teardownServer } from './test-setup';
-import { AppModule } from '../app.module';
 
 describe('AuthController', () => {
   let api: supertest.SuperTest<supertest.Test>;
@@ -18,7 +15,7 @@ describe('AuthController', () => {
   let authService: AuthService
 
   beforeAll(async () => {
-    const app = await setupServer(AppModule);
+    const app = await setupServer(AuthModule);
     api = supertest(await app.getHttpServer());
 
     userService = new UserService(new PrismaService());
