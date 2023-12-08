@@ -56,7 +56,7 @@ describe('AuthController', () => {
     emailSender.add.mockResolvedValueOnce(0);
 
     // Confirm an error is raised if the email is incorrect
-    let result = testPost(api, '/auth/register').send(verificationData);
+    let result = testPost(api, '/auth/verify-email').send(verificationData);
     await result.expect(404)
 
     await result.expect((response) => {
@@ -92,51 +92,69 @@ describe('AuthController', () => {
     })
   });
 
-//   describe('resendVerificationEmail', () => {
-//     it("Should successfully resend a verification email", async () => {
-//       const emailData = {email: "incorrect@email.com"}
-//       emailSender.add.mockResolvedValueOnce(0);
+  it("Should successfully resend a verification email", async () => {
+    const emailData = {email: "incorrect@email.com"}
+    emailSender.add.mockResolvedValueOnce(0);
 
-//       // Confirm an error is raised if the email is incorrect
-//       await expect(authController.resendVerificationEmail(emailData)).rejects.toMatchObject({
-//         status: 404,
-//         message: "Incorrect Email"
-//       });
+    // Confirm an error is raised if the email is incorrect
+    let result = testPost(api, '/auth/resend-verification-email').send(emailData);
+    await result.expect(404)
 
-//       // Confirm if the email was already verfied (previous test already made sure it was)
-//       emailData.email = "johndoe@email.com"
-//       let result = await authController.resendVerificationEmail(emailData);
-//       expect(result).toHaveProperty('status', 'success');
-//       expect(result).toHaveProperty('message', 'Email already verified');
+    await result.expect((response) => {
+      const respBody = response.body
+      expect(respBody).toHaveProperty('status', 'failure');
+      expect(respBody).toHaveProperty('message', 'Incorrect Email');
+    })
 
-//       // Confirm if the email was sent successfully
-//       const user = await userService.getByEmail(emailData.email) as User
-//       await userService.update({id: user.id, isEmailVerified: false}) // Set verfication to false     
-//       result = await authController.resendVerificationEmail(emailData);
-//       expect(result).toHaveProperty('status', 'success');
-//       expect(result).toHaveProperty('message', 'Verification email sent');
-//     });
-//   });
+    // Confirm if the email was already verfied (previous test already made sure it was)
+    emailData.email = "johndoe@email.com"
+    result = testPost(api, '/auth/resend-verification-email').send(emailData);
+    await result.expect(200)
+    await result.expect((response) => {
+      const respBody = response.body
+      expect(respBody).toHaveProperty('status', 'success');
+      expect(respBody).toHaveProperty('message', 'Email already verified');
+    })
 
-//   describe('sendPasswordResetOtp', () => {
-//     it("Should successfully send password reset otp email", async () => {
-//       const emailData = {email: "incorrect@email.com"}
-//       emailSender.add.mockResolvedValueOnce(0);
+    // Confirm if the email was sent successfully
+    const user = await userService.getByEmail(emailData.email) as User
+    await userService.update({id: user.id, isEmailVerified: false}) // Set verfication to false     
+    result = testPost(api, '/auth/resend-verification-email').send(emailData);
+    await result.expect(200)
 
-//       // Confirm an error is raised if the email is incorrect
-//       await expect(authController.sendPasswordResetOtp(emailData)).rejects.toMatchObject({
-//         status: 404,
-//         message: "Incorrect Email"
-//       });
+    await result.expect((response) => {
+      const respBody = response.body
+      expect(respBody).toHaveProperty('status', 'success');
+      expect(respBody).toHaveProperty('message', 'Verification email sent');
+    })
+  });
 
-//       emailData.email = "johndoe@email.com"
-//       const result = await authController.sendPasswordResetOtp(emailData);
+  it("Should successfully send password reset otp email", async () => {
+    const emailData = {email: "incorrect@email.com"}
+    emailSender.add.mockResolvedValueOnce(0);
 
-//       // Confirm if the email was sent successfully
-//       expect(result).toHaveProperty('status', 'success');
-//       expect(result).toHaveProperty('message', 'Password otp sent');
-//     });
-//   });
+    // Confirm an error is raised if the email is incorrect
+    let result = testPost(api, '/auth/send-password-reset-otp').send(emailData);
+    await result.expect(404)
+
+    await result.expect((response) => {
+      const respBody = response.body
+      expect(respBody).toHaveProperty('status', 'failure');
+      expect(respBody).toHaveProperty('message', 'Incorrect Email');
+    })
+
+
+    // Confirm if the email was sent successfully
+    emailData.email = "johndoe@email.com"
+    result = testPost(api, '/auth/send-password-reset-otp').send(emailData);
+    await result.expect(200)
+
+    await result.expect((response) => {
+      const respBody = response.body
+      expect(respBody).toHaveProperty('status', 'success');
+      expect(respBody).toHaveProperty('message', 'Password otp sent');
+    })
+  });
 
 //   describe('setNewPassword', () => {
 //     it("Should successfully set a new password successfully", async () => {

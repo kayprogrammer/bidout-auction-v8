@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { OtpService, UserService } from '../../prisma/services/accounts.service';
 import { SubscriberSchema } from '../schemas/general';
@@ -49,6 +49,7 @@ export class AuthController {
   @Post("/verify-email")
   @ApiOperation({ summary: "Verify a user's email", description: "This endpoint verifies a user's email" })
   @ApiResponse({ status: 200, type: ResponseSchema })
+  @HttpCode(200)
   async verifyEmail(@Body() data: VerifyOtpSchema): Promise<ResponseSchema> {
     // Validate user
     const userByEmail = await this.userService.getByEmail(data.email)
@@ -88,6 +89,7 @@ export class AuthController {
   @Post("/resend-verification-email")
   @ApiOperation({ summary: "Resend Verification Email", description: "This endpoint resends new otp to the user's email" })
   @ApiResponse({ status: 200, type: ResponseSchema })
+  @HttpCode(200)
   async resendVerificationEmail(@Body() data: SubscriberSchema): Promise<ResponseSchema> {
     // Validate user
     const userByEmail = await this.userService.getByEmail(data.email)
@@ -115,6 +117,7 @@ export class AuthController {
   @Post("/send-password-reset-otp")
   @ApiOperation({ summary: "Send Password Reset Otp", description: "This endpoint sends new password reset otp to the user's email" })
   @ApiResponse({ status: 200, type: ResponseSchema })
+  @HttpCode(200)
   async sendPasswordResetOtp(@Body() data: SubscriberSchema): Promise<ResponseSchema> {
     // Validate user
     const userByEmail = await this.userService.getByEmail(data.email)
@@ -135,6 +138,7 @@ export class AuthController {
   @Post("/set-new-password")
   @ApiOperation({ summary: "Set New Password", description: "This endpoint verifies the password reset otp" })
   @ApiResponse({ status: 200, type: ResponseSchema })
+  @HttpCode(200)
   async setNewPassword(@Body() data: SetNewPasswordSchema): Promise<ResponseSchema> {
     // Validate user
     const userByEmail = await this.userService.getByEmail(data.email)
