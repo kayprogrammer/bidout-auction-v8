@@ -6,7 +6,7 @@ import { AuthService } from '../utils/auth.service';
 import supertest from 'supertest';
 import { AuthModule } from '../modules/auth.module';
 import { Test } from '@nestjs/testing';
-import { testPost } from './utils';
+import { testGet, testPost } from './utils';
 import { setupServer, teardownServer } from './test-setup';
 import { AppModule } from '../app.module';
 
@@ -156,115 +156,149 @@ describe('AuthController', () => {
     })
   });
 
-//   describe('setNewPassword', () => {
-//     it("Should successfully set a new password successfully", async () => {
-//       const passwordResetData = {email: "incorrect@email.com", otp: 123456, password: "newtestpassword"}
-//       emailSender.add.mockResolvedValueOnce(0);
+  it("Should successfully set a new password successfully", async () => {
+    const passwordResetData = {email: "incorrect@email.com", otp: 123456, password: "newtestpassword"}
+    emailSender.add.mockResolvedValueOnce(0);
 
-//       // Confirm an error is raised if the email is incorrect
-//       await expect(authController.setNewPassword(passwordResetData)).rejects.toMatchObject({
-//         status: 404,
-//         message: "Incorrect Email"
-//       });
+    // Confirm an error is raised if the email is incorrect
+    let result = testPost(api, '/auth/set-new-password').send(passwordResetData);
+    await result.expect(404)
 
-//       // Create otp
-//       passwordResetData.email = "johndoe@email.com"
-//       const user = await userService.getByEmail(passwordResetData.email) as User
-//       const otp = await otpService.create(user.id) // Create otp
+    await result.expect((response) => {
+      const respBody = response.body
+      expect(respBody).toHaveProperty('status', 'failure');
+      expect(respBody).toHaveProperty('message', 'Incorrect Email');
+    })
 
-//       // Confirm an error is raised if the otp is incorrect
-//       await expect(authController.setNewPassword(passwordResetData)).rejects.toMatchObject({
-//         status: 400,
-//         message: "Incorrect Otp"
-//       });
+    // Create otp
+    passwordResetData.email = "johndoe@email.com"
+    const user = await userService.getByEmail(passwordResetData.email) as User
+    const otp = await otpService.create(user.id) // Create otp
 
-//       // Confirm if the password was changed successfully
-//       passwordResetData.otp = otp.code
-//       const result = await authController.setNewPassword(passwordResetData);
-//       expect(result).toHaveProperty('status', 'success');
-//       expect(result).toHaveProperty('message', 'Password reset successful');
-//     });
-//   });
+    // Confirm an error is raised if the otp is incorrect
+    result = testPost(api, '/auth/set-new-password').send(passwordResetData);
+    await result.expect(400)
 
-//   describe('login', () => {
-//     it("Should successfully generate access and refresh tokens for user", async () => {
-//       const loginData = {email: "incorrect@email.com", password: "incorrect"}
+    await result.expect((response) => {
+      const respBody = response.body
+      expect(respBody).toHaveProperty('status', 'failure');
+      expect(respBody).toHaveProperty('message', 'Incorrect Otp');
+    })
 
-//       // Confirm an error is raised if the credentials are incorrect
-//       await expect(authController.login(loginData)).rejects.toMatchObject({
-//         status: 401,
-//         message: "Invalid credentials"
-//       });
-      
-//       const user = await userService.testUser()
-//       loginData.email = user.email
-//       loginData.password = "testpassword"
+    // Confirm if the password was changed successfully
+    passwordResetData.otp = otp.code
+    result = testPost(api, '/auth/set-new-password').send(passwordResetData);
+    await result.expect(200)
 
-//       // Confirm an error is raised if the user is unverified
-//       await expect(authController.login(loginData)).rejects.toMatchObject({
-//         status: 401,
-//         message: "Verify your email first"
-//       });
-      
-//       await userService.update({id: user.id, isEmailVerified: true})
-//       const result = await authController.login(loginData);
+    await result.expect((response) => {
+      const respBody = response.body
+      expect(respBody).toHaveProperty('status', 'success');
+      expect(respBody).toHaveProperty('message', 'Password reset successful');
+    })
+  });
 
-//       // Confirm if the email was sent successfully
-//       expect(result).toHaveProperty('status', 'success');
-//       expect(result).toHaveProperty('message', 'Login successful');
-//       expect(result).toHaveProperty('data', {access: expect.any(String), refresh: expect.any(String)});
-//     });
-//   });
+  it("Should successfully generate access and refresh tokens for user", async () => {
+    const loginData = {email: "incorrect@email.com", password: "incorrect"}
 
-//   describe('refresh', () => {
-//     it("Should successfully refresh user tokens", async () => {
-//       const refreshData = {refresh: "invalid-token"}
+    // Confirm an error is raised if the credentials are incorrect
+    let result = testPost(api, '/auth/login').send(loginData);
+    await result.expect(401)
 
-//       // Confirm an error is raised if the token is invalid
-//       await expect(authController.refresh(refreshData)).rejects.toMatchObject({
-//         status: 401,
-//         message: "Refresh token is invalid or expired"
-//       });
-      
-//       const user = await userService.testVerifiedUser()
-      
-//       const access = authService.createAccessToken({userId: user.id})
-//       const refresh = authService.createRefreshToken() 
-//       await userService.update({id: user.id, access: access, refresh: refresh})
+    await result.expect((response) => {
+      const respBody = response.body
+      expect(respBody).toHaveProperty('status', 'failure');
+      expect(respBody).toHaveProperty('message', 'Invalid credentials');
+    })
+    
+    const user = await userService.testUser()
+    loginData.email = user.email
+    loginData.password = "testpassword"
 
-//       refreshData.refresh = refresh
-//       const result = await authController.refresh(refreshData);
+    // Confirm an error is raised if the user is unverified
+    result = testPost(api, '/auth/login').send(loginData);
+    await result.expect(401)
 
-//       // Confirm if the email was sent successfully
-//       expect(result).toHaveProperty('status', 'success');
-//       expect(result).toHaveProperty('message', 'Tokens refresh successful');
-//       expect(result).toHaveProperty('data', {access: expect.any(String), refresh: expect.any(String)});
-//     });
-//   });
+    await result.expect((response) => {
+      const respBody = response.body
+      expect(respBody).toHaveProperty('status', 'failure');
+      expect(respBody).toHaveProperty('message', 'Verify your email first');
+    })
+    
+    await userService.update({id: user.id, isEmailVerified: true})
 
-//   describe('logout', () => {
-//     it("Should successfully logout user", async () => {
-//       const request: Record<string,any> = { headers: {authorization: `Bearer invalid_token`} }
-//       // Confirm an error is raised if the token is invalid
-//       await expect(authController.logout(request)).rejects.toMatchObject({
-//         status: 401,
-//         message: "Auth token is invalid or expired"
-//       });
-      
-//       const user = await userService.testVerifiedUser()
-      
-//       const access = authService.createAccessToken({userId: user.id})
-//       const refresh = authService.createRefreshToken() 
-//       await userService.update({id: user.id, access: access, refresh: refresh})
+    // Confirm if the email was sent successfully
+    result = testPost(api, '/auth/login').send(loginData);
+    await result.expect(201)
 
-//       request.headers = {authorization: `Bearer ${access}`}
-//       const result = await authController.logout(request);
+    await result.expect((response) => {
+      const respBody = response.body
+      expect(respBody).toHaveProperty('status', 'success');
+      expect(respBody).toHaveProperty('message', 'Login successful');
+      expect(respBody).toHaveProperty('data', {access: expect.any(String), refresh: expect.any(String)});
+    })
+  });
 
-//       // Confirm if the email was sent successfully
-//       expect(result).toHaveProperty('status', 'success');
-//       expect(result).toHaveProperty('message', 'Logout successful');
-//     });
-//   });
+  it("Should successfully refresh user tokens", async () => {
+    const refreshData = {refresh: "invalid-token"}
+
+    // Confirm an error is raised if the token is invalid
+    let result = testPost(api, '/auth/refresh').send(refreshData);
+    await result.expect(401)
+
+    await result.expect((response) => {
+      const respBody = response.body
+      expect(respBody).toHaveProperty('status', 'failure');
+      expect(respBody).toHaveProperty('message', 'Refresh token is invalid or expired');
+    })
+    
+    const user = await userService.testVerifiedUser()
+    
+    const access = authService.createAccessToken({userId: user.id})
+    const refresh = authService.createRefreshToken() 
+    await userService.update({id: user.id, access: access, refresh: refresh})
+
+    // Confirm if the email was sent successfully
+    refreshData.refresh = refresh
+    result = testPost(api, '/auth/refresh').send(refreshData);
+    await result.expect(201)
+
+    await result.expect((response) => {
+      const respBody = response.body
+      expect(respBody).toHaveProperty('status', 'success');
+      expect(respBody).toHaveProperty('message', 'Tokens refresh successful');
+      expect(result).toHaveProperty('data', {access: expect.any(String), refresh: expect.any(String)});
+    })
+  });
+
+  it("Should successfully logout user", async () => {
+    // Confirm an error is raised if the token is invalid
+    let result = testGet(api, '/auth/logout').set("authorization", "Bearer invalid_token");
+    await result.expect(401)
+
+    await result.expect((response) => {
+      const respBody = response.body
+      expect(respBody).toHaveProperty('status', 'failure');
+      expect(respBody).toHaveProperty('message', 'Auth token is invalid or expired');
+    })
+    
+    const user = await userService.testVerifiedUser()
+    
+    const access = authService.createAccessToken({userId: user.id})
+    const refresh = authService.createRefreshToken() 
+    await userService.update({id: user.id, access: access, refresh: refresh})
+
+
+    // Confirm if the email was sent successfully
+    result = testGet(api, '/auth/logout').set("authorization", `Bearer ${access}`);
+    await result.expect(200)
+
+    await result.expect((response) => {
+      const respBody = response.body
+      expect(respBody).toHaveProperty('status', 'success');
+      expect(respBody).toHaveProperty('message', 'Logout successful');
+    })
+  });
+
   afterAll(async () => {
     await teardownServer();
   });
