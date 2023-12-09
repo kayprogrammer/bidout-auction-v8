@@ -19,8 +19,8 @@ export class CategoryService {
     }
 
     async getAllIds(): Promise<string[]> {
-        const categories: {id: string}[] = await this.prisma.category.findMany({select: {id: true}}) 
-        return categories.map((category) => {category.id}) as unknown as string[]
+        const categories: {id: string}[] = await this.prisma.category.findMany({select: {id: true}});
+        return categories.map((category) => category.id)
     }
 
     async create(data: Prisma.CategoryCreateInput): Promise<Category> {
@@ -37,85 +37,6 @@ export class CategoryService {
 
     async bulkCreate(data: any): Promise<any> {
         await this.prisma.category.createMany({data, skipDuplicates: true})
-    }
-}
-
-@Injectable()
-export class ListingService {
-    constructor(private prisma: PrismaService) { }
-
-    async getAll(): Promise<Listing[]> {
-        const listings: Listing[] = await this.prisma.listing.findMany({ orderBy: { createdAt: 'desc' }, include: {category: true} });
-        return listings
-    }
-
-    async getByAuctioneerId(auctioneerId: Prisma.ListingWhereInput): Promise<Listing[]> {
-        const listings: Listing[] = await this.prisma.listing.findMany({ where: auctioneerId, orderBy: { createdAt: 'desc' } });
-        return listings
-    }
-
-    async getBySlug(slug: Prisma.ListingWhereInput): Promise<Listing | null> {
-        const listing: Listing | null = await this.prisma.listing.findFirst({ where: slug });
-        return listing
-    }
-
-    async getRelatedListings(categoryId: UUID, slug: string): Promise<Listing[]> {
-        const listings: Listing[] = await this.prisma.listing.findMany(
-            { where: { categoryId, NOT: { slug } } }
-        );
-        return listings
-    }
-
-    async getByCategory(categoryId?: Prisma.ListingWhereInput): Promise<Listing[]> {
-        const listings: Listing[] = await this.prisma.listing.findMany(
-            { where: categoryId, orderBy: { createdAt: 'desc' } }
-        );
-        return listings
-    }
-
-    async getCount(): Promise<number> {
-        return this.prisma.listing.count()
-    }
-
-    async create(data: Prisma.ListingCreateInput): Promise<Listing> {
-        var slug: string = data.slug || slugify(data.name)
-        var existingSlug = await this.getBySlug(slug as Prisma.ListingWhereInput)
-        data.slug = slug
-        if (existingSlug) {
-            data.slug = `${slug}-${randomStr(4)}`
-            return this.create(data)
-        }
-        const listing: Listing = await this.prisma.listing.create({ data })
-        return listing
-    }
-
-    async update(data: Listing): Promise<Listing> {
-        var slug: string = data.slug || slugify(data.name)
-        var existingSlug: Listing | null = await this.prisma.listing.findFirst({ where: { slug, NOT: { id: data.id } } });
-        data.slug = slug
-        if (existingSlug) {
-            data.slug = `${slug}-${randomStr(4)}`
-            return this.update(data)
-        }
-        const listing: Listing = await this.prisma.listing.update({ where: { id: data.id }, data })
-        return listing
-    }
-
-    async bulkCreate(data: any): Promise<any> {
-        await this.prisma.listing.createMany({data, skipDuplicates: true})
-    }
-
-    timeLeftSeconds(listing: Listing): number {
-        const currentDate: Date = new Date();
-        const remainingTime: number = (listing.closingDate.valueOf() - currentDate.valueOf()) / 1000
-        return remainingTime
-    }
-
-    timeLeft(listing: Listing): number {
-        if (!listing.active) {
-            return 0
-        }
-        return this.timeLeftSeconds(listing)
     }
 }
 
@@ -196,6 +117,112 @@ export class WatchlistService {
         const existingWatchlist = await this.getByClientIdAndListingId(listingId, clientId as string)
         if (existingWatchlist) return existingWatchlist;
         return await this.prisma.watchlist.create({ data })
+    }
+}
+
+@Injectable()
+export class ListingService {
+    constructor(
+        private prisma: PrismaService,
+        private watchlistService: WatchlistService
+    ) { }
+    
+
+    async getAll(clientId?: string): Promise<Listing[]> {
+        let listings: Listing[] = await this.prisma.listing.findMany({ orderBy: { createdAt: 'desc' }, include: {category: true, auctioneer: true, image: true} });
+        if(clientId) {
+            listings = await Promise.all(listings.map(async (listing: Listing) => {
+                const watchlist = await this.watchlistService.getByClientIdAndListingId(listing.id, clientId);
+                return { ...listing, watchlist: watchlist ? true : false };
+            }));
+        }
+        return listings
+    }
+
+    async getByAuctioneerId(auctioneerId: Prisma.ListingWhereInput): Promise<Listing[]> {
+        const listings: Listing[] = await this.prisma.listing.findMany({ where: auctioneerId, orderBy: { createdAt: 'desc' }, include: {category: true, auctioneer: true, image: true} });
+        return listings
+    }
+
+    async getBySlug(slug: Prisma.ListingWhereInput): Promise<Listing | null> {
+        const listing: Listing | null = await this.prisma.listing.findFirst({ where: slug, include: {category: true, auctioneer: true, image: true} });
+        return listing
+    }
+
+    async getRelatedListings(categoryId: UUID, slug: string, clientId?: string): Promise<Listing[]> {
+        let listings: Listing[] = await this.prisma.listing.findMany(
+            { where: { categoryId, NOT: { slug } }, include: {category: true, auctioneer: true, image: true} }
+        );
+        if(clientId) {
+            listings = await Promise.all(listings.map(async (listing: Listing) => {
+                const watchlist = await this.watchlistService.getByClientIdAndListingId(listing.id, clientId);
+                return { ...listing, watchlist: watchlist ? true : false };
+            }));
+        }
+        return listings
+    }
+
+    async getByCategory(categoryId?: Prisma.ListingWhereInput, clientId?: string): Promise<Listing[]> {
+        let listings: Listing[] = await this.prisma.listing.findMany(
+            { where: categoryId, orderBy: { createdAt: 'desc' }, include: {category: true, auctioneer: true, image: true} }
+        );
+        if(clientId) {
+            listings = await Promise.all(listings.map(async (listing: Listing) => {
+                const watchlist = await this.watchlistService.getByClientIdAndListingId(listing.id, clientId);
+                return { ...listing, watchlist: watchlist ? true : false };
+            }));
+        }
+        return listings
+    }
+
+    async getCount(): Promise<number> {
+        return this.prisma.listing.count()
+    }
+
+    async create(data: Prisma.ListingCreateInput): Promise<Listing> {
+        var slug: string = data.slug || slugify(data.name)
+        var existingSlug = await this.getBySlug(slug as Prisma.ListingWhereInput)
+        data.slug = slug
+        if (existingSlug) {
+            data.slug = `${slug}-${randomStr(4)}`
+            return this.create(data)
+        }
+        const listing: Listing = await this.prisma.listing.create({ data, include: {category: true, auctioneer: true, image: true} })
+        return listing
+    }
+
+    async update(data: Listing): Promise<Listing> {
+        var slug: string = data.slug || slugify(data.name)
+        var existingSlug: Listing | null = await this.prisma.listing.findFirst({ where: { slug, NOT: { id: data.id } } });
+        data.slug = slug
+        if (existingSlug) {
+            data.slug = `${slug}-${randomStr(4)}`
+            return this.update(data)
+        }
+        const listing: Listing = await this.prisma.listing.update({ where: { id: data.id }, data, include: {category: true, auctioneer: true, image: true} })
+        return listing
+    }
+
+    async bulkCreate(data: any): Promise<any> {
+        await this.prisma.listing.createMany({data, skipDuplicates: true})
+    }
+
+    static timeLeftSeconds(listing: Listing): number {
+        const currentDate: Date = new Date();
+        const remainingTime: number = (listing.closingDate.valueOf() - currentDate.valueOf()) / 1000
+        return remainingTime
+    }
+
+    static timeLeft(listing: Listing): number {
+        if (!listing.active) {
+            return 0
+        }
+        return this.timeLeftSeconds(listing)
+    }
+
+    static active(listing: Listing): boolean {
+        const timeLeftSeconds = this.timeLeftSeconds(listing);
+        return timeLeftSeconds > 0
     }
 }
 

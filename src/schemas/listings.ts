@@ -2,6 +2,8 @@ import { ResponseSchema, UserSchema } from "./base";
 import { ApiProperty } from "@nestjs/swagger";
 import { listingExample } from "./schema_examples";
 import { Expose, Transform, Type } from "class-transformer";
+import { ListingService } from "../../prisma/services/listings.service";
+import { FileProcessor } from "../utils/file_processors";
 
 export class ListingSchema {
     @ApiProperty({ example: listingExample.name })
@@ -23,7 +25,7 @@ export class ListingSchema {
 
     @ApiProperty({ example: listingExample.category })
     @Expose()
-    @Transform(({ value, key, obj, type }) => obj.category?.name)
+    @Transform(({ value, key, obj, type }) => obj.category?.name || null)
     category: string | null;
 
     @ApiProperty({ example: listingExample.price })
@@ -37,10 +39,12 @@ export class ListingSchema {
 
     @ApiProperty({ example: listingExample.timeLeftSeconds })
     @Expose()
+    @Transform(({ value, key, obj, type }) => ListingService.timeLeftSeconds(obj))
     timeLeftSeconds: number;
 
     @ApiProperty({ example: listingExample.active })
     @Expose()
+    @Transform(({ value, key, obj, type }) => ListingService.active(obj))
     active: boolean;
 
     @ApiProperty({ example: listingExample.bidsCount })
@@ -53,10 +57,12 @@ export class ListingSchema {
 
     @ApiProperty({ example: listingExample.image })
     @Expose()
+    @Transform(({ value, key, obj, type }) => FileProcessor.generateFileUrl(obj.image, "listings"))
     image: string;
 
     @ApiProperty({ example: listingExample.watchlist })
     @Expose()
+    @Transform(({ value, key, obj, type }) => obj?.watchlist || false)
     watchlist: boolean;
 }
 

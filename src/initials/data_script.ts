@@ -19,7 +19,6 @@ export class CreateData {
         private reviewService: ReviewService,
         private categoryService: CategoryService,
         private fileService: FileService,
-        private fileProcessor: FileProcessor,
     ) { }
 
     public async initialize(): Promise<any> {
@@ -102,12 +101,12 @@ export class CreateData {
     }
 
     async createCategories(): Promise<string[]> {
-        var categoriesId: string[] = await this.categoryService.getAllIds();
-        if (categoriesId.length < 1) {
+        var categoryIds: string[] = await this.categoryService.getAllIds();
+        if (categoryIds.length < 1) {
             await this.categoryService.bulkCreate(this.categoryMappings())
-            categoriesId = await this.categoryService.getAllIds();
+            categoryIds = await this.categoryService.getAllIds();
         }
-        return categoriesId
+        return categoryIds
     }
 
     categoryMappings(): { [key: string]: string }[] {
@@ -142,7 +141,7 @@ export class CreateData {
             const imageFiles = fs.readdirSync(testImagesDirectory);
             imageFiles.map((imageFile: string, i: number) => {
                 const imagePath = path.join(testImagesDirectory, imageFile);
-                this.fileProcessor.uploadFile(imagePath, imageIds[i], "listings")
+                FileProcessor.uploadFile(imagePath, imageIds[i], "listings")
             })
         }
     }

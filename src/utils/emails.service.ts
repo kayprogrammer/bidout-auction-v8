@@ -10,7 +10,6 @@ import { Job } from 'bull';
 export class EmailSender {
     constructor(
         private mail: MailerService, 
-        private userService: UserService,
         private otpService: OtpService
     ) { }
     
@@ -44,7 +43,7 @@ export class EmailSender {
             subject: emailData.subject,
             template: emailData.template,
             context: {
-                name: this.userService.fullName(user),
+                name: UserService.fullName(user),
                 otp: code
             }
         })

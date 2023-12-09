@@ -2,8 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Exclude, Expose, Transform } from "class-transformer";
 import { userExample } from "./schema_examples";
 import { FileProcessor } from "../utils/file_processors";
-
-const fileProcessor = new FileProcessor()
+import { UserService } from "../../prisma/services/accounts.service";
 
 export class ResponseSchema {
     @ApiProperty({ example: "success" })
@@ -17,12 +16,11 @@ export class ResponseSchema {
 export class UserSchema {
     @ApiProperty({ example: userExample.name })
     @Expose()
-    @Transform(({ value, key, obj, type }) => `${obj.firstName} ${obj.lastName}`)
+    @Transform(({ value, key, obj, type }) => UserService.fullName(obj))
     name: string
 
     @Expose()
     @ApiProperty({ example: userExample.avatar })
-    
-    @Transform(({ value, key, obj, type }) => fileProcessor.generateFileUrl(obj.avatar, "avatars"))
+    @Transform(({ value, key, obj, type }) => FileProcessor.generateFileUrl(obj.avatar, "avatars"))
     avatar: string
 }

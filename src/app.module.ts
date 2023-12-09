@@ -3,7 +3,7 @@ import { GeneralModule } from './modules/general.module';
 import { UserService } from '../prisma/services/accounts.service';
 import { PrismaService } from './prisma.service';
 import { FileService, ReviewService } from '../prisma/services/general.service';
-import { CategoryService, ListingService } from '../prisma/services/listings.service';
+import { CategoryService, ListingService, WatchlistService } from '../prisma/services/listings.service';
 import { FileProcessor } from './utils/file_processors';
 import { AuthModule } from './modules/auth.module';
 import { MailerModule } from '@nestjs-modules/mailer';
@@ -44,6 +44,7 @@ import { ListingModule } from './modules/listings.module';
   providers: [
     UserService, 
     ReviewService, 
+    WatchlistService,
     ListingService, 
     CategoryService, 
     FileService, 

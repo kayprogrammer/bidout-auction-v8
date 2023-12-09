@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { Response } from '../utils/responses';
 import { ListingService } from '../../prisma/services/listings.service';
 import { ListingSchema, ListingsResponseSchema } from '../schemas/listings';
+import { ClientGuard } from './deps';
 
 @Controller('api/v8/listings')
 @ApiTags('Listings')
@@ -15,8 +16,9 @@ export class ListingController {
   @Get("/")
   @ApiOperation({ summary: 'Retrieve all listings', description: "This endpoint retrieves all listings" })
   @ApiResponse({ status: 200, type: ListingsResponseSchema })
-  async retrieveListings(): Promise<ListingsResponseSchema> {
-    const listings = await this.listingsService.getAll();
+  @UseGuards(ClientGuard)
+  async retrieveListings(@Req() req: any): Promise<ListingsResponseSchema> {
+    const listings = await this.listingsService.getAll(req.client?.id);
 
     // Return response
     return Response(

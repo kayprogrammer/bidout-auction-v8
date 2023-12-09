@@ -70,7 +70,7 @@ describe('GeneralController', () => {
       expect(respBody).toHaveProperty('status', 'success');
       expect(respBody).toHaveProperty('message', 'Reviews fetched');
       expect(result).toHaveProperty('data', [{
-        reviewer: {name: userService.fullName(reviewer), avatar: null},
+        reviewer: {name: UserService.fullName(reviewer), avatar: null},
         text: reviewDict.text
       }]);
     })

@@ -21,7 +21,7 @@ cloudinary.config({
     secure: true
 });
 export class FileProcessor {
-    generateFileSignature(folder: string, key?: string): any {
+    static generateFileSignature(folder: string, key?: string): any {
         if (key) { 
             key = `${BASE_FOLDER}${folder}/${key}`
             const timestamp = Math.round((new Date).getTime() / 1000);
@@ -39,14 +39,14 @@ export class FileProcessor {
         return null
     }
 
-    generateFileUrl(fileObj: FileModel, folder: string): any {
+    static generateFileUrl(fileObj: FileModel, folder: string): any {
         if (fileObj){
             const fileExtension = ALLOWED_IMAGE_TYPES[fileObj.resourceType]
             const key = `${BASE_FOLDER}${folder}/${fileObj.id}${fileExtension}`
 
             try {
-                Logger.log(key)
-                return cloudinary.url(key)[0]
+                const url = cloudinary.url(key)
+                return url
             } catch (e: any) {
                 Logger.error(`Error generating url for ${key}: ${e}`)
             }
@@ -54,7 +54,7 @@ export class FileProcessor {
         return null
     }
 
-    uploadFile(file: string, key: string, folder: string): any {
+    static uploadFile(file: string, key: string, folder: string): any {
         key = `${BASE_FOLDER}${folder}/${key}`
         try {
             cloudinary.uploader.upload(file, { public_id: key, overwrite: true, faces: true })

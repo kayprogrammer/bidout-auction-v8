@@ -45,7 +45,7 @@ export class UserService {
         return user
     }
 
-    fullName(user: User): string {
+    static fullName(user: User): string {
         return `${user.firstName} ${user.lastName}`
     }
 
