@@ -45,7 +45,7 @@ export class ListingService {
     constructor(private prisma: PrismaService) { }
 
     async getAll(): Promise<Listing[]> {
-        const listings: Listing[] = await this.prisma.listing.findMany({ orderBy: { createdAt: 'desc' } });
+        const listings: Listing[] = await this.prisma.listing.findMany({ orderBy: { createdAt: 'desc' }, include: {category: true} });
         return listings
     }
 

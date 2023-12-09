@@ -12,9 +12,10 @@ import { join } from 'path';
 import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter"
 import { BullModule } from '@nestjs/bull';
 import { SnakeCaseMiddleware } from './middlewares';
+import { ListingModule } from './modules/listings.module';
 
 @Module({
-  imports: [GeneralModule, AuthModule,
+  imports: [GeneralModule, AuthModule, ListingModule,
     BullModule.forRoot({
       redis: {
         host: settings.redisHost,

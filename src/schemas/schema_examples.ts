@@ -21,3 +21,18 @@ export const userExample = {
 export const tokensExample = {
     access: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjMsInVzZXJuYW1lIjoiZXhhbXBsZV91c2VyIiwiZXhwIjoxNjA5NDU5MjAwfQ.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 }
+
+export const listingExample = {
+    name: "Real Product",
+    slug: "real-product",
+    desc: "Real product description",
+    category: "Technology",
+    price: 10000,
+    closingDate: new Date(),
+    timeLeftSeconds: 200,
+    active: true,
+    bidsCount: 2,
+    highestBid: 2000.00,
+    image: userExample.avatar,
+    watchlist: true
+}

@@ -15,9 +15,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
             .json(respData);
     }
     catch(exception: HttpException, host: ArgumentsHost) {
+        Logger.log(exception.message)
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
-        Logger.log(exception.message)
         var errResp: Record<string, any> = exception.getResponse() as Record<string, any>
         var status = exception.getStatus();
 
