@@ -30,6 +30,7 @@ export class ListingSchema {
 
     @ApiProperty({ example: listingExample.price })
     @Expose()
+    @Transform(({ value, key, obj, type }) => parseFloat(obj.price).toFixed(2))
     price: number;
 
     @ApiProperty({ example: listingExample.closingDate })
@@ -53,6 +54,7 @@ export class ListingSchema {
 
     @ApiProperty({ example: listingExample.highestBid })
     @Expose()
+    @Transform(({ value, key, obj, type }) => parseFloat(obj.highestBid).toFixed(2))
     highestBid: number;
 
     @ApiProperty({ example: listingExample.image })
@@ -66,21 +68,25 @@ export class ListingSchema {
     watchlist: boolean;
 }
 
-export class ReviewSchema {
-    @ApiProperty()
-    @Type(() => UserSchema)
-    @Expose()
-    reviewer: UserSchema
-
-    @ApiProperty({ example: "This is a nice platform" })
-    @Expose()
-    text: string
-
-}
-
 // RESPONSE SCHEMAS
 
 export class ListingsResponseSchema extends ResponseSchema {
     @ApiProperty({ type: ListingSchema, isArray: true })
     data: ListingSchema[];
+}
+
+export class ListingResponseDetailDataSchema {
+    @Expose()
+    @ApiProperty({ type: ListingSchema })
+    listing: ListingSchema;
+
+    @Expose()
+    @ApiProperty({ type: ListingSchema, isArray: true })
+    relatedListings: ListingSchema[];
+}
+
+export class ListingResponseSchema extends ResponseSchema {
+    @ApiProperty()
+    @Type(() => ListingResponseDetailDataSchema)
+    data: ListingResponseDetailDataSchema;
 }

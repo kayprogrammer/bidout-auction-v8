@@ -144,21 +144,15 @@ export class ListingService {
         return listings
     }
 
-    async getBySlug(slug: Prisma.ListingWhereInput): Promise<Listing | null> {
-        const listing: Listing | null = await this.prisma.listing.findFirst({ where: slug, include: {category: true, auctioneer: true, image: true} });
+    async getBySlug(slug: string): Promise<Listing | null> {
+        const listing: Listing | null = await this.prisma.listing.findFirst({ where: {slug}, include: {category: true, auctioneer: true, image: true} });
         return listing
     }
 
-    async getRelatedListings(categoryId: UUID, slug: string, clientId?: string): Promise<Listing[]> {
+    async getRelatedListings(categoryId: string, slug: string): Promise<Listing[]> {
         let listings: Listing[] = await this.prisma.listing.findMany(
             { where: { categoryId, NOT: { slug } }, include: {category: true, auctioneer: true, image: true} }
         );
-        if(clientId) {
-            listings = await Promise.all(listings.map(async (listing: Listing) => {
-                const watchlist = await this.watchlistService.getByClientIdAndListingId(listing.id, clientId);
-                return { ...listing, watchlist: watchlist ? true : false };
-            }));
-        }
         return listings
     }
 
@@ -181,7 +175,7 @@ export class ListingService {
 
     async create(data: Prisma.ListingCreateInput): Promise<Listing> {
         var slug: string = data.slug || slugify(data.name)
-        var existingSlug = await this.getBySlug(slug as Prisma.ListingWhereInput)
+        var existingSlug = await this.getBySlug(slug)
         data.slug = slug
         if (existingSlug) {
             data.slug = `${slug}-${randomStr(4)}`
