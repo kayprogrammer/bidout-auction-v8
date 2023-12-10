@@ -128,8 +128,8 @@ export class ListingService {
     ) { }
     
 
-    async getAll(clientId?: string): Promise<Listing[]> {
-        let listings: Listing[] = await this.prisma.listing.findMany({ orderBy: { createdAt: 'desc' }, include: {category: true, auctioneer: true, image: true} });
+    async getAll(quantity?: number, clientId?: string): Promise<Listing[]> {
+        let listings: Listing[] = await this.prisma.listing.findMany({ orderBy: { createdAt: 'desc' }, include: {category: true, auctioneer: true, image: true}, ...(quantity && { take: quantity }), });
         if(clientId) {
             listings = await Promise.all(listings.map(async (listing: Listing) => {
                 const watchlist = await this.watchlistService.getByClientIdAndListingId(listing.id, clientId);
