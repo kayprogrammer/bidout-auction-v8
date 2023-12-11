@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Logger, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { Response } from '../utils/responses';
-import { ListingService } from '../../prisma/services/listings.service';
-import { ListingResponseDetailDataSchema, ListingResponseSchema, ListingSchema, ListingsResponseSchema } from '../schemas/listings';
+import { CategoryService, ListingService } from '../../prisma/services/listings.service';
+import { CategoriesResponseSchema, CategorySchema, ListingResponseDetailDataSchema, ListingResponseSchema, ListingSchema, ListingsResponseSchema } from '../schemas/listings';
 import { ClientGuard } from './deps';
 import { RequestError } from '../exceptions.filter';
 import { Listing } from '@prisma/client';
@@ -12,7 +12,7 @@ import { Listing } from '@prisma/client';
 export class ListingController {
   constructor(
     private readonly listingsService: ListingService,
-
+    private readonly categoriesService: CategoryService,
   ) { }
 
   @Get("/")
@@ -31,7 +31,7 @@ export class ListingController {
     )
   }
 
-  @Get("/:slug")
+  @Get("/detail/:slug")
   @ApiOperation({ summary: "Retrieve listing's detail", description: "This endpoint retrieves detail of a listing" })
   @ApiResponse({ status: 200, type: ListingResponseSchema })
   @UseGuards(ClientGuard)
@@ -47,4 +47,20 @@ export class ListingController {
         ListingResponseDetailDataSchema
     )
   }
+
+  @Get("/categories")
+  @ApiOperation({ summary: "Retrieve all categories", description: "This endpoint retrieves all categories" })
+  @ApiResponse({ status: 200, type: CategoriesResponseSchema })
+  @UseGuards(ClientGuard)
+  async retrieveCategories(): Promise<CategoriesResponseSchema> {
+    const categories = await this.categoriesService.getAll();
+    // Return response
+    return Response(
+        CategoriesResponseSchema, 
+        'Categories fetched', 
+        categories, 
+        CategorySchema
+    )
+  }
 }
+

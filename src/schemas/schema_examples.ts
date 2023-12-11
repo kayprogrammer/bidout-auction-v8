@@ -36,3 +36,8 @@ export const listingExample = {
     image: userExample.avatar,
     watchlist: true
 }
+
+export const categoriesExample = {
+    name: "Technology",
+    slug: "technology"
+}

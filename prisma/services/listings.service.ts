@@ -8,6 +8,11 @@ import { UUID } from 'crypto';
 export class CategoryService {
     constructor(private prisma: PrismaService) { }
 
+    async getAll(): Promise<{id: string}[]> {
+        const categories: {id: string}[] = await this.prisma.category.findMany();
+        return categories
+    }
+
     async getByName(name: Prisma.CategoryWhereInput): Promise<Category | null> {
         const user: Category | null = await this.prisma.category.findFirst({ where: name });
         return user
@@ -19,7 +24,7 @@ export class CategoryService {
     }
 
     async getAllIds(): Promise<string[]> {
-        const categories: {id: string}[] = await this.prisma.category.findMany({select: {id: true}});
+        const categories: {id: string}[] = await this.getAll()
         return categories.map((category) => category.id)
     }
 
