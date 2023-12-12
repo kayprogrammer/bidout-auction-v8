@@ -18,8 +18,8 @@ export class CategoryService {
         return user
     }
 
-    async getBySlug(slug: Prisma.CategoryWhereInput): Promise<Category | null> {
-        const user: Category | null = await this.prisma.category.findFirst({ where: slug });
+    async getBySlug(slug: string): Promise<Category | null> {
+        const user: Category | null = await this.prisma.category.findFirst({ where: {slug} });
         return user
     }
 
@@ -30,7 +30,7 @@ export class CategoryService {
 
     async create(data: Prisma.CategoryCreateInput): Promise<Category> {
         var slug: string = data.slug || slugify(data.name)
-        var existingSlug = await this.getBySlug(slug as Prisma.CategoryWhereInput)
+        var existingSlug = await this.getBySlug(slug)
         data.slug = slug
         if (existingSlug) {
             data.slug = `${slug}-${randomStr(4)}`
@@ -161,9 +161,9 @@ export class ListingService {
         return listings
     }
 
-    async getByCategory(categoryId?: Prisma.ListingWhereInput, clientId?: string): Promise<Listing[]> {
+    async getByCategory(categoryId: string | null, clientId?: string): Promise<Listing[]> {
         let listings: Listing[] = await this.prisma.listing.findMany(
-            { where: categoryId, orderBy: { createdAt: 'desc' }, include: {category: true, auctioneer: true, image: true} }
+            { where: {categoryId}, orderBy: { createdAt: 'desc' }, include: {category: true, auctioneer: true, image: true} }
         );
         if(clientId) {
             listings = await Promise.all(listings.map(async (listing: Listing) => {

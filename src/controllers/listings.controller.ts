@@ -62,5 +62,27 @@ export class ListingController {
         CategorySchema
     )
   }
+
+  @Get("/categories/:slug")
+  @ApiOperation({ summary: 'Retrieve all listings by category', description: "This endpoint retrieves all listings in a particular category. Use slug 'other' for category other" })
+  @ApiResponse({ status: 200, type: ListingsResponseSchema })
+  @UseGuards(ClientGuard)
+  async retrieveListingsByCategories(@Req() req: any, @Param("slug") slug: string): Promise<ListingsResponseSchema> {
+    let category = null
+    if (slug !== "other") {
+      category = await this.categoriesService.getBySlug(slug)
+      if (!category) throw new RequestError("Invalid category", 404)
+      category = category.id
+    }
+    const listings = await this.listingsService.getByCategory(category, req.client?.id)
+    
+    // Return response
+    return Response(
+        ListingsResponseSchema, 
+      'Category Listings fetched', 
+      listings, 
+      ListingSchema
+    )
+  }
 }
 
