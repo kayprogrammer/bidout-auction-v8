@@ -90,6 +90,7 @@ export class ListingResponseDetailDataSchema {
     listing: ListingSchema;
 
     @Expose()
+    @Type(() => ListingSchema)
     @ApiProperty({ type: ListingSchema, isArray: true })
     relatedListings: ListingSchema[];
 }
