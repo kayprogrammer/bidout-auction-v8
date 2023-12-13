@@ -92,7 +92,8 @@ export class WatchlistService {
                     { sessionKey: clientId }
                 ]
             },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            include: {listing: true}
         });
         return watchlist
     }

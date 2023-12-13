@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Logger, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { Response } from '../utils/responses';
-import { CategoryService, ListingService } from '../../prisma/services/listings.service';
+import { CategoryService, ListingService, WatchlistService } from '../../prisma/services/listings.service';
 import { CategoriesResponseSchema, CategorySchema, ListingResponseDetailDataSchema, ListingResponseSchema, ListingSchema, ListingsResponseSchema } from '../schemas/listings';
 import { ClientGuard } from './deps';
 import { RequestError } from '../exceptions.filter';
-import { Listing } from '@prisma/client';
+import { Listing, Watchlist } from '@prisma/client';
 
 @Controller('api/v8/listings')
 @ApiTags('Listings')
@@ -13,6 +13,7 @@ export class ListingController {
   constructor(
     private readonly listingsService: ListingService,
     private readonly categoriesService: CategoryService,
+    private readonly watchlistService: WatchlistService,
   ) { }
 
   @Get("/")
@@ -34,7 +35,6 @@ export class ListingController {
   @Get("/detail/:slug")
   @ApiOperation({ summary: "Retrieve listing's detail", description: "This endpoint retrieves detail of a listing" })
   @ApiResponse({ status: 200, type: ListingResponseSchema })
-  @UseGuards(ClientGuard)
   async retrieveListingDetail(@Param("slug") slug: string): Promise<ListingResponseSchema> {
     let listing = await this.listingsService.getBySlug(slug);
     if (!listing) throw new RequestError('Listing does not exist!', 404);
@@ -80,6 +80,23 @@ export class ListingController {
     return Response(
         ListingsResponseSchema, 
       'Category Listings fetched', 
+      listings, 
+      ListingSchema
+    )
+  }
+
+  @Get("/watchlist")
+  @ApiOperation({ summary: 'Retrieve all listings by users watchlist', description: "This endpoint retrieves all listings in a user or guest watchlist" })
+  @ApiResponse({ status: 200, type: ListingsResponseSchema })
+  @UseGuards(ClientGuard)
+  async retrieveListingsByWatchlist(@Req() req: any): Promise<ListingsResponseSchema> {
+    const watchlists = await this.watchlistService.getByClientId(req?.client?.id)
+    const listings = watchlists.map((watchlist: Record<string, any>) => watchlist.listing)
+    
+    // Return response
+    return Response(
+      ListingsResponseSchema, 
+      'Watchlists Listings fetched', 
       listings, 
       ListingSchema
     )
