@@ -1,4 +1,3 @@
-import { Logger } from "@nestjs/common"
 import { plainToInstance } from "class-transformer"
 import snakecaseKeys from 'snakecase-keys'
 
@@ -10,6 +9,8 @@ export const Response = <T, U, V>(schema: new () => T, message: string, data?: U
       excludeExtraneousValues: true,
       enableImplicitConversion: true,
     });
+  } else {
+    resp.data = data
   }
   // Convert to snake case
   resp = snakecaseKeys(resp)

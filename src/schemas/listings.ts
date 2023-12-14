@@ -1,9 +1,10 @@
 import { ResponseSchema, UserSchema } from "./base";
 import { ApiProperty } from "@nestjs/swagger";
-import { categoriesExample, listingExample } from "./schema_examples";
+import { categoriesExample, listingExample, uuidExample } from "./schema_examples";
 import { Expose, Transform, Type } from "class-transformer";
 import { ListingService } from "../../prisma/services/listings.service";
 import { FileProcessor } from "../utils/file_processors";
+import { IsNotEmpty, IsString } from "class-validator";
 
 export class ListingSchema {
     @ApiProperty({ example: listingExample.name })
@@ -77,6 +78,12 @@ export class CategorySchema {
     @Expose()
     slug: string
 }
+export class AddListingToWatchlistSchema {
+    @IsString()
+    @ApiProperty({ example: listingExample.slug })
+    slug: string
+}
+
 // RESPONSE SCHEMAS
 
 export class ListingsResponseSchema extends ResponseSchema {
@@ -104,4 +111,10 @@ export class ListingResponseSchema extends ResponseSchema {
 export class CategoriesResponseSchema extends ResponseSchema {
     @ApiProperty({ type: CategorySchema, isArray: true })
     data: CategorySchema[];
+}
+
+export class AddListingToWatchlistResponseSchema extends ResponseSchema {
+    @Expose()
+    @ApiProperty({ example: {guestUserId: uuidExample} })
+    data: Record<string,any>;
 }

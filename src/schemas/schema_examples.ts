@@ -41,3 +41,5 @@ export const categoriesExample = {
     name: "Technology",
     slug: "technology"
 }
+
+export const uuidExample = "2c64c881-59ca-4916-b2bc-8cfb75c3f09b"

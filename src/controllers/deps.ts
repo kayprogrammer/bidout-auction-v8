@@ -36,7 +36,7 @@ export class ClientGuard implements CanActivate {
         const request = context.switchToHttp().getRequest();
         const guestuserid = request.headers["guestuserid"];
         const token = request.headers.authorization?.split(' ')[1];
-        request.client = null
+        request.client = {id: null, isAuthenticated: false}
 
         if (token) {
             const decoded = await this.authService.decodeJWT(token);
@@ -44,6 +44,7 @@ export class ClientGuard implements CanActivate {
                 throw new RequestError("Auth Token is invalid or expired", 401)
             }
             request.client = decoded; // Attach user to the request
+            request.client.isAuthenticated = true
         } else if (guestuserid) {
             const guestuser = await this.userService.getGuestUserById(guestuserid)
             request.client = guestuser

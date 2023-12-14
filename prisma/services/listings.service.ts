@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../src/prisma.service';
 import { Bid, Category, Listing, Prisma, Watchlist } from '@prisma/client';
 import { randomStr, slugify } from '../../src/utils/utils';
@@ -85,6 +85,8 @@ export class WatchlistService {
     }
 
     async getByClientId(clientId: UUID): Promise<Watchlist[]> {
+        if (!clientId) return [];
+
         const watchlist: Watchlist[] = await this.prisma.watchlist.findMany({
             where: {
                 OR: [
@@ -93,7 +95,7 @@ export class WatchlistService {
                 ]
             },
             orderBy: { createdAt: 'desc' },
-            include: {listing: true}
+            include: {listing: { include: { category: true, auctioneer: true, image: true }}}
         });
         return watchlist
     }
@@ -109,20 +111,29 @@ export class WatchlistService {
                     { sessionKey: clientId }
                 ]
             },
+            include: {listing: { include: { category: true, auctioneer: true, image: true }}}
         });
         return watchlist
     }
 
-    async create(data: Watchlist): Promise<Watchlist> {
+    async create(data: Record<string,any>): Promise<Watchlist | null> {
         const userId: string | null = data.userId
         const sessionKey: string | null = data.sessionKey
         const listingId: string = data.listingId
         const clientId: string | null = userId || sessionKey
 
-        // Avoid duplicates
+        // Delete if existing. Create if not.
         const existingWatchlist = await this.getByClientIdAndListingId(listingId, clientId as string)
-        if (existingWatchlist) return existingWatchlist;
-        return await this.prisma.watchlist.create({ data })
+        if (existingWatchlist) {
+            await this.delete(existingWatchlist.id)
+            return null
+        } else {
+            return await this.prisma.watchlist.create({ data: data as any })
+        }
+    }
+
+    async delete(id: string) {
+        await this.prisma.watchlist.delete({ where: { id } })
     }
 }
 
