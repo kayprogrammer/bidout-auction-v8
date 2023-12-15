@@ -27,7 +27,7 @@ export const listingExample = {
     slug: "real-product",
     desc: "Real product description",
     category: "Technology",
-    price: "10000.00",
+    price: "10000.55",
     closingDate: new Date(),
     timeLeftSeconds: 200,
     active: true,

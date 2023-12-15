@@ -28,7 +28,8 @@ export class ListingController {
   @ApiSecurity("GuestUserId")
   @UseGuards(ClientGuard)
   async retrieveListings(@Req() req: any, @Query("quantity") quantity?: number): Promise<ListingsResponseSchema> {
-  const listings = await this.listingsService.getAll(quantity, req.client.id);
+    const listings = await this.listingsService.getAll(quantity, req.client.id);
+
     // Return response
     return Response(
         ListingsResponseSchema, 
@@ -178,7 +179,7 @@ export class ListingController {
   async createBid(@Req() req: any, @Param("slug") slug: string, @Body() data: CreateBidSchema): Promise<BidResponseSchema> {
     const listing = await this.listingsService.getBySlug(slug);
     if (!listing) throw new RequestError('Listing does not exist!', 404);
-    const amount = Number(data.amount)
+    const amount = data.amount
     const user = req.user
     if (user.id === listing.auctioneerId) {
       throw new RequestError("You cannot bid your own product!", 403)
@@ -186,13 +187,13 @@ export class ListingController {
       throw new RequestError("This auction is closed!", 410)
     } else if (ListingService.timeLeft(listing) < 1) {
       throw new RequestError("This auction is expired and closed!", 410)
-    } else if (amount < Number(listing.price)) {
+    } else if (amount < listing.price) {
       throw new RequestError("Bid amount cannot be less than the bidding price!")
-    } else if (amount <= Number(listing.highestBid)) {
+    } else if (amount <= listing.highestBid) {
       throw new RequestError("Bid amount must be more than the highest bid!")
     }
     
-    const bid = await this.bidsService.create(listing.bidsCount, {userId: user.id, listingId: listing.id, amount: data.amount})
+    const bid = await this.bidsService.create(listing.bidsCount, {userId: user.id, listingId: listing.id, amount: amount})
 
     // Return response
     return Response(

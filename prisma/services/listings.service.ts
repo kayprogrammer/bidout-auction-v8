@@ -277,7 +277,7 @@ export class BidService {
             // Update the bid
             bid = await this.update(bid.id, data)
         } else {
-            bid = await this.prisma.bid.create({ data: data as any })
+            bid = await this.prisma.bid.create({ data: data as any, include: {user: {include: {avatar: true}}} })
             bidsCount += 1
         }   
         // Update bids count and highest bids
