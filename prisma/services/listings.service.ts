@@ -252,7 +252,7 @@ export class BidService {
     }
 
     async getByListingId(listingId: string, count?: number): Promise<Bid[]> {
-        const bids: Bid[] = await this.prisma.bid.findMany({ where: {listingId}, orderBy: { createdAt: 'desc' }, ...(count && { take: count }) });
+        const bids: Bid[] = await this.prisma.bid.findMany({ where: {listingId}, orderBy: { createdAt: 'desc' }, include: {user: {include: {avatar: true}}}, ...(count && { take: count }) });
         return bids
     }
 
@@ -286,7 +286,7 @@ export class BidService {
     }
 
     async update(id: string, data: Record<string, any>): Promise<Bid> {
-        return await this.prisma.bid.update({ where: { id }, data })
+        return await this.prisma.bid.update({ where: { id }, data, include: {user: {include: {avatar: true}}} })
     }
 }
 

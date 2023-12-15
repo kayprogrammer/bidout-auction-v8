@@ -4,7 +4,7 @@ import { categoriesExample, listingExample, uuidExample } from "./schema_example
 import { Expose, Transform, Type } from "class-transformer";
 import { ListingService } from "../../prisma/services/listings.service";
 import { FileProcessor } from "../utils/file_processors";
-import { IsDecimal, IsNotEmpty, IsString } from "class-validator";
+import { IsDecimal, IsString } from "class-validator";
 import { Prisma } from "@prisma/client";
 
 export class ListingSchema {
@@ -32,7 +32,7 @@ export class ListingSchema {
 
     @ApiProperty({ example: listingExample.price })
     @Expose()
-    @Transform(({ value, key, obj, type }) => parseFloat(obj.price).toFixed(2))
+    @Transform(({ value, key, obj, type }) => obj.price.toFixed(2))
     price: number;
 
     @ApiProperty({ example: listingExample.closingDate })
@@ -56,7 +56,7 @@ export class ListingSchema {
 
     @ApiProperty({ example: listingExample.highestBid })
     @Expose()
-    @Transform(({ value, key, obj, type }) => parseFloat(obj.highestBid).toFixed(2))
+    @Transform(({ value, key, obj, type }) => obj.price.toFixed(2))
     highestBid: number;
 
     @ApiProperty({ example: listingExample.image })
@@ -97,7 +97,8 @@ export class BidSchema {
 
     @ApiProperty({ example: listingExample.price })
     @Transform(({ value, key, obj, type }) => parseFloat(obj.amount).toFixed(2))
-    amount: number
+    @Expose()
+    amount: Prisma.Decimal
 
     @ApiProperty({ example: listingExample.closingDate })
     @Expose()

@@ -27,12 +27,12 @@ export const listingExample = {
     slug: "real-product",
     desc: "Real product description",
     category: "Technology",
-    price: 10000.00,
+    price: "10000.00",
     closingDate: new Date(),
     timeLeftSeconds: 200,
     active: true,
     bidsCount: 2,
-    highestBid: 2000.00,
+    highestBid: "2000.00",
     image: userExample.avatar,
     watchlist: true
 }
