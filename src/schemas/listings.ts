@@ -4,7 +4,8 @@ import { categoriesExample, listingExample, uuidExample } from "./schema_example
 import { Expose, Transform, Type } from "class-transformer";
 import { ListingService } from "../../prisma/services/listings.service";
 import { FileProcessor } from "../utils/file_processors";
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsDecimal, IsNotEmpty, IsString } from "class-validator";
+import { Prisma } from "@prisma/client";
 
 export class ListingSchema {
     @ApiProperty({ example: listingExample.name })
@@ -84,6 +85,37 @@ export class AddListingToWatchlistSchema {
     slug: string
 }
 
+export class BidSchema {
+    @ApiProperty({ example: uuidExample })
+    @Expose()
+    id: string
+
+    @ApiProperty()
+    @Type(() => UserSchema)
+    @Expose()
+    user: UserSchema;
+
+    @ApiProperty({ example: listingExample.price })
+    @Transform(({ value, key, obj, type }) => parseFloat(obj.amount).toFixed(2))
+    amount: number
+
+    @ApiProperty({ example: listingExample.closingDate })
+    @Expose()
+    @Transform(({ value, key, obj, type }) => obj.createdAt.toISOString())
+    createdAt: string
+
+    @ApiProperty({ example: listingExample.closingDate })
+    @Expose()
+    @Transform(({ value, key, obj, type }) => obj.updatedAt.toISOString())
+    updatedAt: string
+} 
+
+export class CreateBidSchema {
+    @IsDecimal()
+    @ApiProperty({ example: listingExample.price })
+    amount: Prisma.Decimal
+}
+
 // RESPONSE SCHEMAS
 
 export class ListingsResponseSchema extends ResponseSchema {
@@ -117,4 +149,14 @@ export class AddListingToWatchlistResponseSchema extends ResponseSchema {
     @Expose()
     @ApiProperty({ example: {guestUserId: uuidExample} })
     data: Record<string,any>;
+}
+
+export class BidsResponseSchema extends ResponseSchema {
+    @ApiProperty({ type: BidSchema, isArray: true })
+    data: BidSchema[];
+}
+
+export class BidResponseSchema extends ResponseSchema {
+    @ApiProperty({ type: BidSchema })
+    data: BidSchema;
 }

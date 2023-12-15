@@ -202,13 +202,15 @@ export class ListingService {
         return listing
     }
 
-    async update(data: Listing): Promise<Listing> {
-        var slug: string = data.slug || slugify(data.name)
-        var existingSlug: Listing | null = await this.prisma.listing.findFirst({ where: { slug, NOT: { id: data.id } } });
-        data.slug = slug
-        if (existingSlug) {
-            data.slug = `${slug}-${randomStr(4)}`
-            return this.update(data)
+    async update(data: Record<string,any>): Promise<Listing> {
+        if (data.name) {
+            var slug: string = data.slug || slugify(data.name)
+            var existingSlug: Listing | null = await this.prisma.listing.findFirst({ where: { slug, NOT: { id: data.id } } });
+            data.slug = slug
+            if (existingSlug) {
+                data.slug = `${slug}-${randomStr(4)}`
+                return this.update(data)
+            }
         }
         const listing: Listing = await this.prisma.listing.update({ where: { id: data.id }, data, include: {category: true, auctioneer: true, image: true} })
         return listing
@@ -239,15 +241,18 @@ export class ListingService {
 
 @Injectable()
 export class BidService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private listingsService: ListingService
+    ) { }
 
-    async getByUserId(userId: Prisma.BidWhereInput): Promise<Bid[]> {
-        const bids: Bid[] = await this.prisma.bid.findMany({ where: userId, orderBy: { createdAt: 'desc' } });
+    async getByUserId(userId: string): Promise<Bid[]> {
+        const bids: Bid[] = await this.prisma.bid.findMany({ where: {userId}, orderBy: { createdAt: 'desc' } });
         return bids
     }
 
-    async getByListingId(listingId: Prisma.BidWhereInput): Promise<Bid[]> {
-        const bids: Bid[] = await this.prisma.bid.findMany({ where: listingId, orderBy: { createdAt: 'desc' } });
+    async getByListingId(listingId: string, count?: number): Promise<Bid[]> {
+        const bids: Bid[] = await this.prisma.bid.findMany({ where: {listingId}, orderBy: { createdAt: 'desc' }, ...(count && { take: count }) });
         return bids
     }
 
@@ -258,23 +263,29 @@ export class BidService {
                 userId,
                 listingId
             },
+            include: {user: {include: {avatar: true}}}
         });
         return bid
     }
 
-    async create(data: Bid): Promise<Bid> {
-        const userId: string | null = data.userId
+    async create(bidsCount: number, data: Record<string,any>): Promise<Bid> {
+        const userId: string = data.userId
         const listingId: string = data.listingId
 
-        const existingBid: Bid | null = await this.getByUserIdAndListingId(userId, listingId)
-        if (existingBid) {
+        let bid: Bid | null = await this.getByUserIdAndListingId(userId, listingId)
+        if (bid) {
             // Update the bid
-            return await this.update(existingBid.id, data)
-        }
-        return await this.prisma.bid.create({ data })
+            bid = await this.update(bid.id, data)
+        } else {
+            bid = await this.prisma.bid.create({ data: data as any })
+            bidsCount += 1
+        }   
+        // Update bids count and highest bids
+        await this.listingsService.update({id: bid.listingId, highestBid: bid.amount, bidsCount: bidsCount})
+        return bid
     }
 
-    async update(id: string, data: Bid): Promise<Bid> {
+    async update(id: string, data: Record<string, any>): Promise<Bid> {
         return await this.prisma.bid.update({ where: { id }, data })
     }
 }

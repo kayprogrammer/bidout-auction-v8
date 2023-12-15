@@ -1,11 +1,13 @@
-import { Body, Controller, Get, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation, ApiQuery, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { Response } from '../utils/responses';
-import { CategoryService, ListingService, WatchlistService } from '../../prisma/services/listings.service';
-import { AddListingToWatchlistResponseSchema, AddListingToWatchlistSchema, CategoriesResponseSchema, CategorySchema, ListingResponseDetailDataSchema, ListingResponseSchema, ListingSchema, ListingsResponseSchema } from '../schemas/listings';
-import { ClientGuard } from './deps';
+import { BidService, CategoryService, ListingService, WatchlistService } from '../../prisma/services/listings.service';
+import { AddListingToWatchlistResponseSchema, AddListingToWatchlistSchema, BidResponseSchema, BidSchema, BidsResponseSchema, CategoriesResponseSchema, CategorySchema, CreateBidSchema, ListingResponseDetailDataSchema, ListingResponseSchema, ListingSchema, ListingsResponseSchema } from '../schemas/listings';
+import { AuthGuard, ClientGuard } from './deps';
 import { RequestError } from '../exceptions.filter';
 import { UserService } from '../../prisma/services/accounts.service';
+import { Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 
 @Controller('api/v8/listings')
 @ApiTags('Listings')
@@ -14,6 +16,7 @@ export class ListingController {
     private readonly listingsService: ListingService,
     private readonly categoriesService: CategoryService,
     private readonly watchlistService: WatchlistService,
+    private readonly bidsService: BidService,
     private readonly userService: UserService,
   ) { }
 
@@ -39,7 +42,7 @@ export class ListingController {
   @ApiOperation({ summary: "Retrieve listing's detail", description: "This endpoint retrieves detail of a listing" })
   @ApiResponse({ status: 200, type: ListingResponseSchema })
   async retrieveListingDetail(@Param("slug") slug: string): Promise<ListingResponseSchema> {
-    let listing = await this.listingsService.getBySlug(slug);
+    const listing = await this.listingsService.getBySlug(slug);
     if (!listing) throw new RequestError('Listing does not exist!', 404);
     const relatedListings = await this.listingsService.getRelatedListings(listing.categoryId as string, slug)
     // Return response
@@ -144,6 +147,59 @@ export class ListingController {
       AddListingToWatchlistResponseSchema, 
       respMessage,
       {guestuserId},
+    )
+  }
+
+  @Get("/detail/:slug/bids")
+  @ApiOperation({ summary: 'Retrieve bids in a listing', description: "This endpoint retrieves at most 3 bids from a particular listing" })
+  @ApiResponse({ status: 200, type: BidsResponseSchema })
+  @ApiBearerAuth()
+  @ApiSecurity("GuestUserId")
+  @UseGuards(ClientGuard)
+  async retrieveListingBids(@Param("slug") slug: string): Promise<BidsResponseSchema> {
+    const listing = await this.listingsService.getBySlug(slug);
+    if (!listing) throw new RequestError('Listing does not exist!', 404);
+    const bids = await this.bidsService.getByListingId(listing.id, 3)
+
+    // Return response
+    return Response(
+      BidsResponseSchema, 
+      'Listing Bids fetched', 
+      bids, 
+      BidSchema
+    )
+  }
+
+  @Post("/detail/:slug/bids")
+  @ApiOperation({ summary: 'Add a bid to a listing', description: "This endpoint adds a bid to a particular listing" })
+  @ApiResponse({ status: 201, type: BidResponseSchema })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  async createBid(@Req() req: any, @Param("slug") slug: string, @Body() data: CreateBidSchema): Promise<BidResponseSchema> {
+    const listing = await this.listingsService.getBySlug(slug);
+    if (!listing) throw new RequestError('Listing does not exist!', 404);
+    const amount = Number(data.amount)
+    const user = req.user
+    if (user.id === listing.auctioneerId) {
+      throw new RequestError("You cannot bid your own product!", 403)
+    } else if (!listing.active) {
+      throw new RequestError("This auction is closed!", 410)
+    } else if (ListingService.timeLeft(listing) < 1) {
+      throw new RequestError("This auction is expired and closed!", 410)
+    } else if (amount < Number(listing.price)) {
+      throw new RequestError("Bid amount cannot be less than the bidding price!")
+    } else if (amount <= Number(listing.highestBid)) {
+      throw new RequestError("Bid amount must be more than the highest bid!")
+    }
+    
+    const bid = await this.bidsService.create(listing.bidsCount, {userId: user.id, listingId: listing.id, amount: data.amount})
+
+    // Return response
+    return Response(
+      BidResponseSchema, 
+      'Bid added to listing', 
+      bid, 
+      BidSchema
     )
   }
 }

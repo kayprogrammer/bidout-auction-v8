@@ -27,7 +27,7 @@ export const listingExample = {
     slug: "real-product",
     desc: "Real product description",
     category: "Technology",
-    price: 10000,
+    price: 10000.00,
     closingDate: new Date(),
     timeLeftSeconds: 200,
     active: true,
@@ -43,3 +43,5 @@ export const categoriesExample = {
 }
 
 export const uuidExample = "2c64c881-59ca-4916-b2bc-8cfb75c3f09b"
+
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxYzRiMWQwOC03NmViLTRmZWYtYjBjYi00NGNjOTVjZjRiOTIiLCJleHAiOjE3MDU2NjU5NjksImlhdCI6MTcwMjY2NTk2OX0.N9sm-U6aT6slwnlk4nu83_RSp4LBQonCyNBI519LJlM
