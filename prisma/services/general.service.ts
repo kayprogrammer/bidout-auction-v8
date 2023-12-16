@@ -90,4 +90,9 @@ export class FileService {
     async bulkCreate(data: any): Promise<any> {
         await this.prisma.fileModel.createMany({data})
     }
+
+    async testFile(): Promise<FileModel> {
+        const file =  await this.prisma.fileModel.create({ data: {resourceType: "image/jpeg"} })
+        return file
+    }
 }

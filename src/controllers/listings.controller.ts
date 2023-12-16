@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation, ApiQuery, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { Response } from '../utils/responses';
 import { BidService, CategoryService, ListingService, WatchlistService } from '../../prisma/services/listings.service';
@@ -6,8 +6,6 @@ import { AddListingToWatchlistResponseSchema, AddListingToWatchlistSchema, BidRe
 import { AuthGuard, ClientGuard } from './deps';
 import { RequestError } from '../exceptions.filter';
 import { UserService } from '../../prisma/services/accounts.service';
-import { Prisma } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
 
 @Controller('api/v8/listings')
 @ApiTags('Listings')

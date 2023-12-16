@@ -17,9 +17,9 @@ describe('AuthController', () => {
   beforeAll(async () => {
     const app = await setupServer(AuthModule);
     api = supertest(await app.getHttpServer());
-
-    userService = new UserService(new PrismaService());
-    otpService = new OtpService(new PrismaService());
+    const prisma = new PrismaService();
+    userService = new UserService(prisma);
+    otpService = new OtpService(prisma);
     authService = new AuthService(userService);
     emailSender = { add: jest.fn() }
   });

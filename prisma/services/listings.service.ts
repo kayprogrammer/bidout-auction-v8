@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../src/prisma.service';
-import { Bid, Category, Listing, Prisma, Watchlist } from '@prisma/client';
+import { Bid, Category, Listing, Prisma, User, Watchlist, FileModel } from '@prisma/client';
 import { randomStr, slugify } from '../../src/utils/utils';
 import { UUID } from 'crypto';
+import { UserService } from './accounts.service';
+import { FileService } from './general.service';
 
 @Injectable()
 export class CategoryService {
@@ -13,8 +15,8 @@ export class CategoryService {
         return categories
     }
 
-    async getByName(name: Prisma.CategoryWhereInput): Promise<Category | null> {
-        const user: Category | null = await this.prisma.category.findFirst({ where: name });
+    async getByName(name: string): Promise<Category | null> {
+        const user: Category | null = await this.prisma.category.findFirst({ where: {name} });
         return user
     }
 
@@ -28,7 +30,7 @@ export class CategoryService {
         return categories.map((category) => category.id)
     }
 
-    async create(data: Prisma.CategoryCreateInput): Promise<Category> {
+    async create(data: Record<string,any>): Promise<Category> {
         var slug: string = data.slug || slugify(data.name)
         var existingSlug = await this.getBySlug(slug)
         data.slug = slug
@@ -36,12 +38,21 @@ export class CategoryService {
             data.slug = `${slug}-${randomStr(4)}`
             return this.create(data)
         }
-        const category: Category = await this.prisma.category.create({ data })
+        const category: Category = await this.prisma.category.create({ data: data as any })
         return category
     }
 
     async bulkCreate(data: any): Promise<any> {
         await this.prisma.category.createMany({data, skipDuplicates: true})
+    }
+
+    async testCategory(): Promise<Category> {
+        const name = "TestCategory"
+        let category = await this.getByName(name) 
+        if (!category) {
+            category = await this.create({name: name})
+        }
+        return category
     }
 }
 
@@ -141,7 +152,11 @@ export class WatchlistService {
 export class ListingService {
     constructor(
         private prisma: PrismaService,
-        private watchlistService: WatchlistService
+        private watchlistService: WatchlistService,
+        private userService: UserService,
+        private categoryService: CategoryService,
+        private fileService: FileService
+
     ) { }
     
 
@@ -190,7 +205,7 @@ export class ListingService {
         return this.prisma.listing.count()
     }
 
-    async create(data: Prisma.ListingCreateInput): Promise<Listing> {
+    async create(data: Record<string,any>): Promise<Listing> {
         var slug: string = data.slug || slugify(data.name)
         var existingSlug = await this.getBySlug(slug)
         data.slug = slug
@@ -198,7 +213,7 @@ export class ListingService {
             data.slug = `${slug}-${randomStr(4)}`
             return this.create(data)
         }
-        const listing: Listing = await this.prisma.listing.create({ data, include: {category: true, auctioneer: true, image: true} })
+        const listing: Listing = await this.prisma.listing.create({ data: data as any, include: {category: true, auctioneer: true, image: true} })
         return listing
     }
 
@@ -236,6 +251,25 @@ export class ListingService {
     static active(listing: Listing): boolean {
         const timeLeftSeconds = this.timeLeftSeconds(listing);
         return timeLeftSeconds > 0
+    }
+
+    // Test Data
+    async testListing(): Promise<Record<string,any>> {
+        const verifiedUser = await this.userService.testUser()
+        const file = await this.fileService.testFile()
+        const category = await this.categoryService.testCategory()
+        
+        const listingDict = {
+            auctioneer: {id: verifiedUser.id},
+            name: "New Listing",
+            desc: "New description",
+            category: {id: category.id},
+            price: 1000.00,
+            closingDate: new Date(new Date().getTime() + 1 * 24 * 60 * 60 * 1000),
+            image: {id: file.id},
+        }
+        const listing = await this.create(listingDict)
+        return {user: verifiedUser, listing: listing, category: category}
     }
 }
 
