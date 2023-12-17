@@ -255,20 +255,21 @@ export class ListingService {
 
     // Test Data
     async testListing(): Promise<Record<string,any>> {
-        const verifiedUser = await this.userService.testUser()
+        const verifiedUser = await this.userService.testVerifiedUser()
         const file = await this.fileService.testFile()
         const category = await this.categoryService.testCategory()
         
         const listingDict = {
-            auctioneer: {id: verifiedUser.id},
+            auctioneerId: verifiedUser.id,
             name: "New Listing",
             desc: "New description",
-            category: {id: category.id},
+            categoryId: category.id,
             price: 1000.00,
             closingDate: new Date(new Date().getTime() + 1 * 24 * 60 * 60 * 1000),
-            image: {id: file.id},
+            imageId: file.id,
         }
-        const listing = await this.create(listingDict)
+        let listing = await this.prisma.listing.findFirst() 
+        if (!listing) listing = await this.create(listingDict)
         return {user: verifiedUser, listing: listing, category: category}
     }
 }

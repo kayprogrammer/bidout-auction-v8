@@ -46,7 +46,23 @@ describe('ListingsController', () => {
           const respBody = response.body
           expect(respBody).toHaveProperty('status', 'success');
           expect(respBody).toHaveProperty('message', 'Listings fetched');
-          expect(result).toHaveProperty('data');
+          expect(respBody.data).toHaveLength(1);
+        })
+    });
+
+    it('Should return listing detail', async () => {
+
+        // Create Listing
+        await listingService.testListing()
+
+        // Test
+        const result = testGet(api, '/listings');
+        await result.expect(200)
+        await result.expect((response) => {
+          const respBody = response.body
+          expect(respBody).toHaveProperty('status', 'success');
+          expect(respBody).toHaveProperty('message', 'Listings fetched');
+          expect(respBody.data).toHaveLength(1);
         })
     });
 
@@ -54,5 +70,3 @@ describe('ListingsController', () => {
         await teardownServer();
     });
 })
-
-// Fix issues with prisma include in create
