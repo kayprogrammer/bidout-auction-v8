@@ -7,6 +7,9 @@ import { BidService, CategoryService, ListingService, WatchlistService } from ".
 import { AuthService } from "../utils/auth.service";
 import { testGet } from "./utils";
 import { FileService } from "../../prisma/services/general.service";
+import { Logger } from "@nestjs/common";
+
+const listingsExpectedKeys: string[] = ["name", "auctioneer", "slug", "desc", "category", "price", "closing_date", "time_left_seconds", "active", "bids_count", "highest_bid", "image", "watchlist"];
 
 describe('ListingsController', () => {
     let api: supertest.SuperTest<supertest.Test>;
@@ -60,20 +63,18 @@ describe('ListingsController', () => {
           const respBody = response.body
           expect(respBody).toHaveProperty('status', 'failure');
           expect(respBody).toHaveProperty('message', 'Listing does not exist!');
-          expect(respBody.data).toHaveLength(1);
         })
 
         // For valid slug
         // Get Listing
         const listing = await listingService.testListing()
-        result = testGet(api, `/listings/detail/${listing.slug}`);
-        await result.expect(404)
+        result = testGet(api, `/listings/detail/${listing.listing.slug}`);
+        await result.expect(200)
         await result.expect((response) => {
           const respBody = response.body
           expect(respBody).toHaveProperty('status', 'success');
           expect(respBody).toHaveProperty('message', 'Listing details fetched');
-          const expectedKeys: string[] = ["name", "auctioneer", "slug", "desc", "category", "price", "closing_date", "time_left_seconds", "active", "bids_count", "highest_bid", "image", "watchlist"];
-          for (const key of expectedKeys) {
+          for (const key of listingsExpectedKeys) {
             expect(Object.keys(respBody.data)).toContain(key);
           }
         })
@@ -95,6 +96,34 @@ describe('ListingsController', () => {
           ]);
         })
     });
+
+    it('Should return listings under a category', async () => {
+      // Create Category
+      const category = await categoryService.testCategory()
+
+      // Test
+
+      // For invalid category
+      let result = testGet(api, '/listings/categories/invalid_slug');
+      await result.expect(404)
+      await result.expect((response) => {
+        const respBody = response.body
+        expect(respBody).toHaveProperty('status', 'failure');
+        expect(respBody).toHaveProperty('message', 'Invalid category');
+      })
+
+      // For valid category
+      result = testGet(api, `/listings/categories/${category.slug}`);
+      await result.expect(200)
+      await result.expect((response) => {
+        const respBody = response.body
+        expect(respBody).toHaveProperty('status', 'success');
+        expect(respBody).toHaveProperty('message', 'Category Listings fetched');
+        for (const key of listingsExpectedKeys) {
+          expect(Object.keys(respBody.data)).toContain(key);
+        }
+      })
+  });
 
     afterAll(async () => {
         await teardownServer();
