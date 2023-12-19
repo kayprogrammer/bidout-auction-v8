@@ -5,7 +5,7 @@ import { UserService } from "../../prisma/services/accounts.service";
 import { PrismaService } from "../prisma.service";
 import { BidService, CategoryService, ListingService, WatchlistService } from "../../prisma/services/listings.service";
 import { AuthService } from "../utils/auth.service";
-import { testGet } from "./utils";
+import { authTestGet, testGet } from "./utils";
 import { FileService } from "../../prisma/services/general.service";
 import { Logger } from "@nestjs/common";
 
@@ -123,6 +123,23 @@ describe('ListingsController', () => {
           expect(Object.keys(respBody.data)).toContain(key);
         }
       })
+    });
+
+    it('Should return watchlist listings', async () => {
+
+      // Create Watchlist
+      await listingService.testWatchlist();
+
+      // Test
+      const user = await userService.testVerifiedUser();
+      const result = await authTestGet(api, '/listings/watchlist', authService, userService, user);
+      
+      // Assertions
+      expect(result.statusCode).toBe(200);
+      const respBody = result.body
+      expect(respBody).toHaveProperty('status', 'success');
+      expect(respBody).toHaveProperty('message', 'Watchlists Listings fetched');
+      expect(respBody.data).toHaveLength(1);
   });
 
     afterAll(async () => {

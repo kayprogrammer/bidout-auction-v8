@@ -146,6 +146,8 @@ export class WatchlistService {
     async delete(id: string) {
         await this.prisma.watchlist.delete({ where: { id } })
     }
+
+
 }
 
 @Injectable()
@@ -271,6 +273,19 @@ export class ListingService {
         let listing = await this.prisma.listing.findFirst() 
         if (!listing) listing = await this.create(listingDict)
         return {user: verifiedUser, listing: listing, category: category}
+    }
+
+    async testWatchlist(): Promise<Record<string,any>> {
+        const verifiedUser = await this.userService.testVerifiedUser()
+        const listing = await this.testListing()
+        
+        const watchlistDict = {
+            userId: verifiedUser.id,
+            listingId: listing.listing.id
+        }
+        let watchlist = await this.prisma.watchlist.findFirst() 
+        if (!watchlist) watchlist = await this.prisma.watchlist.create({data: watchlistDict})
+        return watchlist
     }
 }
 
