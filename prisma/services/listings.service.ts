@@ -150,8 +150,6 @@ export class WatchlistService {
     async deleteAll() {
         await this.prisma.watchlist.deleteMany({})
     }
-
-
 }
 
 @Injectable()
@@ -341,6 +339,10 @@ export class BidService {
 
     async update(id: string, data: Record<string, any>): Promise<Bid> {
         return await this.prisma.bid.update({ where: { id }, data, include: {user: {include: {avatar: true}}} })
+    }
+
+    async deleteAll() {
+        await this.prisma.bid.deleteMany({})
     }
 }
 

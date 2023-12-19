@@ -7,7 +7,6 @@ import { BidService, CategoryService, ListingService, WatchlistService } from ".
 import { AuthService } from "../utils/auth.service";
 import { authTestGet, authTestPost, testGet } from "./utils";
 import { FileService } from "../../prisma/services/general.service";
-import { Logger } from "@nestjs/common";
 
 const listingsExpectedKeys: string[] = ["name", "auctioneer", "slug", "desc", "category", "price", "closing_date", "time_left_seconds", "active", "bids_count", "highest_bid", "image", "watchlist"];
 
@@ -177,6 +176,34 @@ describe('ListingsController', () => {
     expect(respBody).toHaveProperty('status', 'success');
     expect(respBody).toHaveProperty('message', 'Listing Bids fetched');
     expect(respBody.data).toHaveLength(1);
+  });
+
+  it('Should add bid to a listing', async () => {
+    await bidService.deleteAll()
+    const listing = (await listingService.testListing()).listing
+    const bidDict = {amount: 20000.55}
+    // Create Watchlist
+
+    // Test
+    const user = await userService.testAnotherVerifiedUser();
+    const result = await authTestPost(api, `/listings/detail/${listing.slug}/bids`, authService, userService, user, bidDict);
+    
+    // Assertions
+    expect(result.statusCode).toBe(201);
+    const respBody = result.body
+    expect(respBody).toHaveProperty('status', 'success');
+    expect(respBody).toHaveProperty('message', 'Bid added to listing');
+    expect(respBody).toHaveProperty("data", {
+      id: expect.anything(),
+      user: {
+        avatar: null,
+        name: UserService.fullName(user)
+      },
+      amount: bidDict.amount.toString(),
+      created_at: expect.anything(),
+      updated_at: expect.anything(),
+    });
+    // You can test for the error responses yourself. I don tire...
   });
 
   afterAll(async () => {
