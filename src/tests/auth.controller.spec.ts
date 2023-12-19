@@ -27,7 +27,7 @@ describe('AuthController', () => {
   it('Should successfully register a user', async () => {
     const registerData = {firstName: "John", lastName: "Doe", email: "johndoe@email.com", password: "testpass", termsAgreement: true}
     emailSender.add.mockResolvedValueOnce(0);
-    let result = testPost(api, '/auth/register').send(registerData);
+    let result = testPost(api, '/auth/register', registerData);
 
     await result.expect(201);
     await result.expect((response) => {
@@ -38,7 +38,7 @@ describe('AuthController', () => {
     });
     
     // Confirm an error is raised if the email has been used
-    result = testPost(api, '/auth/register').send(registerData);
+    result = testPost(api, '/auth/register', registerData);
     await result.expect(422)
     await result.expect((response) => {
         const respBody = response.body
@@ -53,7 +53,7 @@ describe('AuthController', () => {
     emailSender.add.mockResolvedValueOnce(0);
 
     // Confirm an error is raised if the email is incorrect
-    let result = testPost(api, '/auth/verify-email').send(verificationData);
+    let result = testPost(api, '/auth/verify-email', verificationData);
     await result.expect(404)
 
     await result.expect((response) => {
@@ -68,7 +68,7 @@ describe('AuthController', () => {
     const otp = await otpService.create(user.id) // Create otp
 
     // Confirm an error is raised if the otp is incorrect
-    result = testPost(api, '/auth/verify-email').send(verificationData);
+    result = testPost(api, '/auth/verify-email', verificationData);
     await result.expect(400)
 
     await result.expect((response) => {
@@ -79,7 +79,7 @@ describe('AuthController', () => {
 
     // Confirm if the email was verified successfully
     verificationData.otp = otp.code
-    result = testPost(api, '/auth/verify-email').send(verificationData);
+    result = testPost(api, '/auth/verify-email', verificationData);
     await result.expect(200)
 
     await result.expect((response) => {
@@ -94,7 +94,7 @@ describe('AuthController', () => {
     emailSender.add.mockResolvedValueOnce(0);
 
     // Confirm an error is raised if the email is incorrect
-    let result = testPost(api, '/auth/resend-verification-email').send(emailData);
+    let result = testPost(api, '/auth/resend-verification-email', emailData);
     await result.expect(404)
 
     await result.expect((response) => {
@@ -105,7 +105,7 @@ describe('AuthController', () => {
 
     // Confirm if the email was already verfied (previous test already made sure it was)
     emailData.email = "johndoe@email.com"
-    result = testPost(api, '/auth/resend-verification-email').send(emailData);
+    result = testPost(api, '/auth/resend-verification-email', emailData);
     await result.expect(200)
     await result.expect((response) => {
       const respBody = response.body
@@ -116,7 +116,7 @@ describe('AuthController', () => {
     // Confirm if the email was sent successfully
     const user = await userService.getByEmail(emailData.email) as User
     await userService.update({id: user.id, isEmailVerified: false}) // Set verfication to false     
-    result = testPost(api, '/auth/resend-verification-email').send(emailData);
+    result = testPost(api, '/auth/resend-verification-email', emailData);
     await result.expect(200)
 
     await result.expect((response) => {
@@ -131,7 +131,7 @@ describe('AuthController', () => {
     emailSender.add.mockResolvedValueOnce(0);
 
     // Confirm an error is raised if the email is incorrect
-    let result = testPost(api, '/auth/send-password-reset-otp').send(emailData);
+    let result = testPost(api, '/auth/send-password-reset-otp', emailData);
     await result.expect(404)
 
     await result.expect((response) => {
@@ -143,7 +143,7 @@ describe('AuthController', () => {
 
     // Confirm if the email was sent successfully
     emailData.email = "johndoe@email.com"
-    result = testPost(api, '/auth/send-password-reset-otp').send(emailData);
+    result = testPost(api, '/auth/send-password-reset-otp', emailData);
     await result.expect(200)
 
     await result.expect((response) => {
@@ -158,7 +158,7 @@ describe('AuthController', () => {
     emailSender.add.mockResolvedValueOnce(0);
 
     // Confirm an error is raised if the email is incorrect
-    let result = testPost(api, '/auth/set-new-password').send(passwordResetData);
+    let result = testPost(api, '/auth/set-new-password', passwordResetData);
     await result.expect(404)
 
     await result.expect((response) => {
@@ -173,7 +173,7 @@ describe('AuthController', () => {
     const otp = await otpService.create(user.id) // Create otp
 
     // Confirm an error is raised if the otp is incorrect
-    result = testPost(api, '/auth/set-new-password').send(passwordResetData);
+    result = testPost(api, '/auth/set-new-password', passwordResetData);
     await result.expect(400)
 
     await result.expect((response) => {
@@ -184,7 +184,7 @@ describe('AuthController', () => {
 
     // Confirm if the password was changed successfully
     passwordResetData.otp = otp.code
-    result = testPost(api, '/auth/set-new-password').send(passwordResetData);
+    result = testPost(api, '/auth/set-new-password', passwordResetData);
     await result.expect(200)
 
     await result.expect((response) => {
@@ -198,7 +198,7 @@ describe('AuthController', () => {
     const loginData = {email: "incorrect@email.com", password: "incorrect"}
 
     // Confirm an error is raised if the credentials are incorrect
-    let result = testPost(api, '/auth/login').send(loginData);
+    let result = testPost(api, '/auth/login', loginData);
     await result.expect(401)
 
     await result.expect((response) => {
@@ -212,7 +212,7 @@ describe('AuthController', () => {
     loginData.password = "testpassword"
 
     // Confirm an error is raised if the user is unverified
-    result = testPost(api, '/auth/login').send(loginData);
+    result = testPost(api, '/auth/login', loginData);
     await result.expect(401)
 
     await result.expect((response) => {
@@ -224,7 +224,7 @@ describe('AuthController', () => {
     await userService.update({id: user.id, isEmailVerified: true})
 
     // Confirm if the email was sent successfully
-    result = testPost(api, '/auth/login').send(loginData);
+    result = testPost(api, '/auth/login', loginData);
     await result.expect(201)
 
     await result.expect((response) => {
@@ -239,7 +239,7 @@ describe('AuthController', () => {
     const refreshData = {refresh: "invalid-token"}
 
     // Confirm an error is raised if the token is invalid
-    let result = testPost(api, '/auth/refresh').send(refreshData);
+    let result = testPost(api, '/auth/refresh', refreshData);
     await result.expect(401)
 
     await result.expect((response) => {
@@ -256,7 +256,7 @@ describe('AuthController', () => {
 
     // Confirm if the email was sent successfully
     refreshData.refresh = refresh
-    result = testPost(api, '/auth/refresh').send(refreshData);
+    result = testPost(api, '/auth/refresh', refreshData);
     await result.expect(201)
 
     await result.expect((response) => {

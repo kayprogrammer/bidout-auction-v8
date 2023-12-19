@@ -37,7 +37,7 @@ describe('GeneralController', () => {
 
   it('Should successfully add email to db', async () => {
     const subscriberData = {email: "johndoe@email.com"}
-    const result = testPost(api, '/general/subscribe').send(subscriberData);
+    const result = testPost(api, '/general/subscribe', subscriberData);
     await result.expect(201)
     await result.expect((response) => {
       const respBody = response.body

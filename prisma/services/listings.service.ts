@@ -147,6 +147,10 @@ export class WatchlistService {
         await this.prisma.watchlist.delete({ where: { id } })
     }
 
+    async deleteAll() {
+        await this.prisma.watchlist.deleteMany({})
+    }
+
 
 }
 

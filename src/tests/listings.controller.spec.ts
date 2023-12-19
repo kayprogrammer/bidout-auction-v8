@@ -5,7 +5,7 @@ import { UserService } from "../../prisma/services/accounts.service";
 import { PrismaService } from "../prisma.service";
 import { BidService, CategoryService, ListingService, WatchlistService } from "../../prisma/services/listings.service";
 import { AuthService } from "../utils/auth.service";
-import { authTestGet, testGet } from "./utils";
+import { authTestGet, authTestPost, testGet } from "./utils";
 import { FileService } from "../../prisma/services/general.service";
 import { Logger } from "@nestjs/common";
 
@@ -91,7 +91,7 @@ describe('ListingsController', () => {
           const respBody = response.body
           expect(respBody).toHaveProperty('status', 'success');
           expect(respBody).toHaveProperty('message', 'Categories fetched');
-          expect(respBody.data).toHaveProperty("data", [
+          expect(respBody).toHaveProperty("data", [
             {name: category.name, slug: category.slug}
           ]);
         })
@@ -142,7 +142,27 @@ describe('ListingsController', () => {
       expect(respBody.data).toHaveLength(1);
   });
 
-    afterAll(async () => {
-        await teardownServer();
+  it('Should add listing to user watchlist', async () => {
+    await watchlistService.deleteAll()
+    const listing = await listingService.testListing()
+    const watchlistDict = {slug: listing.slug}
+    // Create Watchlist
+
+    // Test
+    const user = await userService.testVerifiedUser();
+    const result = await authTestPost(api, '/listings/watchlist', authService, userService, user, watchlistDict);
+    
+    // Assertions
+    expect(result.statusCode).toBe(201);
+    const respBody = result.body
+    expect(respBody).toHaveProperty('status', 'success');
+    expect(respBody).toHaveProperty('message', 'Listing added to user watchlist');
+    expect(respBody).toHaveProperty("data", {
+      guestuser_id: null
     });
+  });
+
+  afterAll(async () => {
+    await teardownServer();
+  });
 })
