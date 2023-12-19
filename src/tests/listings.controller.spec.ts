@@ -162,6 +162,23 @@ describe('ListingsController', () => {
     });
   });
 
+  it('Should return bids in a listing', async () => {
+    // Create Bid
+    const listing = (await listingService.testListing()).listing
+    const user = await userService.testVerifiedUser()
+    await bidService.create(0, {userId: user.id, listingId: listing.id, amount: 20000})
+
+    // Test
+    const result = await authTestGet(api, `/listings/detail/${listing.slug}/bids`, authService, userService, user);
+    
+    // Assertions
+    expect(result.statusCode).toBe(200);
+    const respBody = result.body
+    expect(respBody).toHaveProperty('status', 'success');
+    expect(respBody).toHaveProperty('message', 'Listing Bids fetched');
+    expect(respBody.data).toHaveLength(1);
+  });
+
   afterAll(async () => {
     await teardownServer();
   });
