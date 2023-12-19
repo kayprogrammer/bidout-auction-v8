@@ -79,6 +79,23 @@ describe('ListingsController', () => {
         })
     });
 
+    it('Should return categories', async () => {
+        // Create Category
+        const category = await categoryService.testCategory()
+
+        // Test
+        const result = testGet(api, '/listings/categories');
+        await result.expect(200)
+        await result.expect((response) => {
+          const respBody = response.body
+          expect(respBody).toHaveProperty('status', 'success');
+          expect(respBody).toHaveProperty('message', 'Categories fetched');
+          expect(respBody.data).toHaveProperty("data", [
+            {name: category.name, slug: category.slug}
+          ]);
+        })
+    });
+
     afterAll(async () => {
         await teardownServer();
     });
