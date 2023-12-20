@@ -175,8 +175,8 @@ export class ListingService {
         return listings
     }
 
-    async getByAuctioneerId(auctioneerId: Prisma.ListingWhereInput): Promise<Listing[]> {
-        const listings: Listing[] = await this.prisma.listing.findMany({ where: auctioneerId, orderBy: { createdAt: 'desc' }, include: {category: true, auctioneer: true, image: true} });
+    async getByAuctioneerId(auctioneerId: string, quantity?: number): Promise<Listing[]> {
+        const listings: Listing[] = await this.prisma.listing.findMany({ where: {auctioneerId}, orderBy: { createdAt: 'desc' }, include: {category: true, auctioneer: true, image: true}, ...(quantity && { take: quantity }), });
         return listings
     }
 
