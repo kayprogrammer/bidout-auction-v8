@@ -13,9 +13,10 @@ import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handleba
 import { BullModule } from '@nestjs/bull';
 import { SnakeCaseMiddleware } from './middlewares';
 import { ListingModule } from './modules/listings.module';
+import { AuctioneerModule } from './modules/auctioneer.module';
 
 @Module({
-  imports: [GeneralModule, AuthModule, ListingModule,
+  imports: [GeneralModule, AuthModule, ListingModule, AuctioneerModule,
     BullModule.forRoot({
       redis: {
         host: settings.redisHost,
