@@ -43,3 +43,13 @@ export const randomItem = (items: any[]): any => {
     const randomItem = items[randomIndex];
     return randomItem;
 }
+
+export const removeKeys = (data: Record<string, any>, ...keysToRemove: string[]) => {
+    const newData = { ...data };
+
+    // Remove specified keys from the copied object
+    keysToRemove.forEach((key) => {
+        delete newData[key];
+    });
+    return newData
+}

@@ -10,6 +10,7 @@ import { AuthService } from '../utils/auth.service';
 import { FileService } from '../../prisma/services/general.service';
 import { CreateListingResponseDataSchema, CreateListingResponseSchema, CreateListingSchema } from '../schemas/auctioneer';
 import { Category } from '@prisma/client';
+import { removeKeys } from '../utils/utils';
 
 @Controller('api/v8/auctioneer')
 @ApiTags('Auctioneer')
@@ -45,14 +46,30 @@ export class AuctioneerController {
   @ApiOperation({ summary: 'Create a listing', description: "This endpoint creates a new listing. Note: Use the returned file_upload_data to upload image to cloudinary" })
   @ApiResponse({ status: 201, type: CreateListingResponseSchema })
   @ApiBearerAuth()
-  async createListing(@Req() req: any, @Param("slug") slug: string, @Body() data: CreateListingSchema): Promise<CreateListingResponseSchema> {
+  async createListing(@Req() req: any, @Body() data: CreateListingSchema): Promise<CreateListingResponseSchema> {
+    const auctioneer = req.user
     let categorySlug = data.category
-    let category: Promise<Category | null> = null
+    let category: Category | null
 
     const fileType = data.fileType
     if(categorySlug !== "other") {
       category = await this.categoryService.getBySlug(categorySlug)
+      if (!category) throw new RequestError("Invalid Entry", 422, {category: "Invalid Category"})
+    } else {
+      category = null
     }
+
+    // Create File Object
+    const file = await this.fileService.create({resourceType: data.fileType})
+
+    // Create listing
+    const dataToCreate = removeKeys(data, "category", "fileType")
+    dataToCreate.imageId = file.id
+    dataToCreate.auctioneerId = auctioneeupdated create listinr.id
+    dataToCreate.categoryId = null
+    if (category) dataToCreate.categoryId = category.id
+    const listing = await this.listingsService.create(dataToCreate)
+ 
     // Return response
     return Response(
       CreateListingResponseSchema, 

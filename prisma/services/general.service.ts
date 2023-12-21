@@ -87,8 +87,12 @@ export class FileService {
         return files.map((file: FileModel) => file.id);
     }
 
-    async bulkCreate(data: any): Promise<any> {
-        await this.prisma.fileModel.createMany({data})
+    async create(data: Record<string,any>): Promise<FileModel> {
+        return await this.prisma.fileModel.create({data: data as any})
+    }
+    
+    async bulkCreate(data: Record<string,any>): Promise<any> {
+        await this.prisma.fileModel.createMany({data: data as any})
     }
 
     async testFile(): Promise<FileModel> {
