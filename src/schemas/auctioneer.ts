@@ -6,7 +6,7 @@ import { ListingSchema } from "./listings"
 import { ResponseSchema } from "./base"
 import { ALLOWED_IMAGE_TYPES, FileProcessor } from "../utils/file_processors"
 import { IsUtcDateTimeValid } from "./validators"
-import { Expose, Transform } from "class-transformer"
+import { Exclude, Expose, Transform } from "class-transformer"
 
 export class CreateListingSchema {
     @IsString()
@@ -79,6 +79,12 @@ export class UpdateListingSchema {
 }
 
 export class CreateListingResponseDataSchema extends ListingSchema {
+    @Exclude()
+    watchlist: boolean
+    
+    @Exclude()
+    image: string
+
     @ApiProperty({ name: "file_upload_data", example: fileUploadDataExample })
     @Transform(({ value, key, obj, type }) => FileProcessor.generateFileSignature("listings", obj.imageId))
     @Expose()
