@@ -45,13 +45,11 @@ export class AuctioneerController {
   @Post("/listings")
   @ApiOperation({ summary: 'Create a listing', description: "This endpoint creates a new listing. Note: Use the returned file_upload_data to upload image to cloudinary" })
   @ApiResponse({ status: 201, type: CreateListingResponseSchema })
-  @ApiBearerAuth()
   async createListing(@Req() req: any, @Body() data: CreateListingSchema): Promise<CreateListingResponseSchema> {
     const auctioneer = req.user
     let categorySlug = data.category
     let category: Category | null
 
-    const fileType = data.fileType
     if(categorySlug !== "other") {
       category = await this.categoryService.getBySlug(categorySlug)
       if (!category) throw new RequestError("Invalid Entry", 422, {category: "Invalid Category"})
@@ -65,7 +63,7 @@ export class AuctioneerController {
     // Create listing
     const dataToCreate = removeKeys(data, "category", "fileType")
     dataToCreate.imageId = file.id
-    dataToCreate.auctioneerId = auctioneeupdated create listinr.id
+    dataToCreate.auctioneerId = auctioneer.id
     dataToCreate.categoryId = null
     if (category) dataToCreate.categoryId = category.id
     const listing = await this.listingsService.create(dataToCreate)
