@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Patch, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from '../utils/responses';
 import { BidService, CategoryService, ListingService, WatchlistService } from '../../prisma/services/listings.service';
@@ -8,7 +8,7 @@ import { RequestError } from '../exceptions.filter';
 import { UserService } from '../../prisma/services/accounts.service';
 import { AuthService } from '../utils/auth.service';
 import { FileService } from '../../prisma/services/general.service';
-import { CreateListingResponseDataSchema, CreateListingResponseSchema, CreateListingSchema } from '../schemas/auctioneer';
+import { CreateListingResponseDataSchema, CreateListingResponseSchema, CreateListingSchema, UpdateListingSchema } from '../schemas/auctioneer';
 import { Category } from '@prisma/client';
 import { removeKeys } from '../utils/utils';
 
@@ -67,6 +67,45 @@ export class AuctioneerController {
     dataToCreate.categoryId = null
     if (category) dataToCreate.categoryId = category.id
     const listing = await this.listingsService.create(dataToCreate)
+ 
+    // Return response
+    return Response(
+      CreateListingResponseSchema, 
+      'Listing created successfully', 
+      listing, 
+      CreateListingResponseDataSchema
+    )
+  }
+
+  @Patch("/listings/:slug")
+  @ApiOperation({ summary: 'Update a listing', description: "This endpoint updates a listing. Note: Use the returned file_upload_data to upload image to cloudinary" })
+  @ApiResponse({ status: 200, type: CreateListingResponseSchema })
+  async updateListing(@Req() req: any, @Param("slug") slug: string, @Body() data: UpdateListingSchema): Promise<CreateListingResponseSchema> {
+    const auctioneer = req.user
+    const listing = await this.listingsService.getBySlug(slug);
+    if (!listing) throw new RequestError('Listing does not exist!', 404);
+    if (auctioneer.id !== listing.auctioneerId) throw new RequestError("This listing doesn't belong to you!");
+    Logger.log(data)
+    // let categorySlug = data.category
+    // let category: Category | null
+
+    // if(categorySlug !== "other") {
+    //   category = await this.categoryService.getBySlug(categorySlug)
+    //   if (!category) throw new RequestError("Invalid Entry", 422, {category: "Invalid Category"})
+    // } else {
+    //   category = null
+    // }
+
+    // // Create File Object
+    // const file = await this.fileService.create({resourceType: data.fileType})
+
+    // // Create listing
+    // const dataToCreate = removeKeys(data, "category", "fileType")
+    // dataToCreate.imageId = file.id
+    // dataToCreate.auctioneerId = auctioneer.id
+    // dataToCreate.categoryId = null
+    // if (category) dataToCreate.categoryId = category.id
+    // const listing = await this.listingsService.create(dataToCreate)
  
     // Return response
     return Response(

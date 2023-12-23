@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common';
 import { registerDecorator, ValidationOptions, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 import { convertDateToUTC } from 'src/utils/utils';
 
@@ -7,8 +6,6 @@ export class IsUtcDateTimeValidConstraint implements ValidatorConstraintInterfac
   validate(value: any, args: ValidationArguments) {
     const currentUtcDate = convertDateToUTC(new Date());
     const inputUtcDate = convertDateToUTC(new Date(value));
-    Logger.log(currentUtcDate)
-    Logger.log(inputUtcDate)
 
     // Check if the parsed input UTC date is greater than or equal to the current UTC date
     return inputUtcDate > currentUtcDate;
