@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Exclude, Expose, Transform } from "class-transformer";
-import { userExample } from "./schema_examples";
+import { userExample, uuidExample } from "./schema_examples";
 import { FileProcessor } from "../utils/file_processors";
 import { UserService } from "../../prisma/services/accounts.service";
 
@@ -14,6 +14,10 @@ export class ResponseSchema {
 
 @Exclude()
 export class UserSchema {
+    @ApiProperty({ example: uuidExample })
+    @Expose()
+    id: string
+
     @ApiProperty({ example: userExample.name })
     @Expose()
     @Transform(({ value, key, obj, type }) => UserService.fullName(obj))

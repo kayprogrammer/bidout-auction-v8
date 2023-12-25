@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from '../utils/responses';
 import { BidService, CategoryService, ListingService } from '../../prisma/services/listings.service';
@@ -65,12 +65,14 @@ export class AuctioneerController {
     dataToCreate.categoryId = null
     if (category) dataToCreate.categoryId = category.id
     const listing = await this.listingsService.create(dataToCreate)
+    const listingDict: Record<string,any> = { ...listing }
+    listingDict.fileUpload = true
  
     // Return response
     return Response(
       CreateListingResponseSchema, 
       'Listing created successfully', 
-      listing, 
+      listingDict, 
       CreateListingResponseDataSchema
     )
   }
@@ -85,7 +87,6 @@ export class AuctioneerController {
     if (auctioneer.id !== listing.auctioneerId) throw new RequestError("This listing doesn't belong to you!");
     let categorySlug = data.category
     let category: Category | null
-
     let dataToUpdate: Record<string,any> = removeNullValues(data)
 
     if(categorySlug) {

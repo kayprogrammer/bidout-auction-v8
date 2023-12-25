@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../src/prisma.service';
 import { Bid, Category, Listing, Prisma, Watchlist } from '@prisma/client';
 import { randomStr, slugify } from '../../src/utils/utils';
-import { UUID } from 'crypto';
 import { UserService } from './accounts.service';
 import { FileService } from './general.service';
 
@@ -95,7 +94,7 @@ export class WatchlistService {
         return watchlist
     }
 
-    async getByClientId(clientId: UUID): Promise<Watchlist[]> {
+    async getByClientId(clientId: string): Promise<Watchlist[]> {
         if (!clientId) return [];
 
         const watchlist: Watchlist[] = await this.prisma.watchlist.findMany({
@@ -257,8 +256,8 @@ export class ListingService {
     }
 
     static active(listing: Listing): boolean {
-        const timeLeftSeconds = this.timeLeftSeconds(listing);
-        return timeLeftSeconds > 0
+        const timeLeft = this.timeLeft(listing);
+        return timeLeft > 0
     }
 
     // Test Data

@@ -22,6 +22,7 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       transform: true,
+      disableErrorMessages: false,
       exceptionFactory: (errors) => {
         return new UnprocessableEntityException({
           message: 'Invalid Entry',

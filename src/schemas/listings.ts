@@ -4,7 +4,7 @@ import { categoriesExample, listingExample, uuidExample } from "./schema_example
 import { Expose, Transform, Type } from "class-transformer";
 import { ListingService } from "../../prisma/services/listings.service";
 import { FileProcessor } from "../utils/file_processors";
-import { IsNumber, IsString } from "class-validator";
+import { IsNumber, IsString, Min } from "class-validator";
 import { Prisma } from "@prisma/client";
 
 export class ListingSchema {
@@ -112,7 +112,9 @@ export class BidSchema {
 } 
 
 export class CreateBidSchema {
-    @IsNumber()
+    @Type(() => Number)
+    @Min(0.01, {message: "Must not be less than 0.01"})
+    @IsNumber({ maxDecimalPlaces: 2 }, { message: "Invalid Price" })
     @ApiProperty({ example: listingExample.price })
     amount: Prisma.Decimal
 }

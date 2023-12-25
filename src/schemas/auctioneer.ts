@@ -1,12 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { Prisma } from "@prisma/client"
-import { IsBoolean, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, Min } from "class-validator"
+import { IsBoolean, IsIn, IsInt, IsNotEmpty, IsNumber, IsNumberString, IsOptional, IsString, MaxLength, Min } from "class-validator"
 import { fileTypeExample, fileUploadDataExample, listingExample, userExample } from "./schema_examples"
 import { ListingSchema } from "./listings"
 import { ResponseSchema } from "./base"
 import { ALLOWED_IMAGE_TYPES, FileProcessor } from "../utils/file_processors"
 import { IsUtcDateTimeValid } from "./validators"
-import { Exclude, Expose, Transform } from "class-transformer"
+import { Exclude, Expose, Transform, Type } from "class-transformer"
 
 export class CreateListingSchema {
     @IsString()
@@ -22,8 +22,9 @@ export class CreateListingSchema {
     @ApiProperty({ example: listingExample.category.toLowerCase() })
     category: string
 
-    @IsNumber({ maxDecimalPlaces: 2 })
+    @Type(() => Number)
     @Min(0.01, {message: "Must not be less than 0.01"})
+    @IsNumber({ maxDecimalPlaces: 2 }, { message: "Invalid Price" })
     @ApiProperty({ example: listingExample.price })
     price: Prisma.Decimal
 
@@ -56,8 +57,9 @@ export class UpdateListingSchema {
     category: string
 
     @IsOptional()
-    @IsNumber({ maxDecimalPlaces: 2 })
-    @Min(0.01)
+    @Type(() => Number)
+    @Min(0.01, {message: "Must not be less than 0.01"})
+    @IsNumber({ maxDecimalPlaces: 2 }, { message: "Invalid Price" })
     @ApiProperty({ example: listingExample.price })
     price: Prisma.Decimal
 
