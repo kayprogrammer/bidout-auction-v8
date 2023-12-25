@@ -27,7 +27,7 @@ export class ListingSchema {
 
     @ApiProperty({ example: listingExample.category })
     @Expose()
-    @Transform(({ value, key, obj, type }) => obj.category?.name || null)
+    @Transform(({ value, key, obj, type }) => obj.category?.name || "Other")
     category: string | null;
 
     @ApiProperty({ example: listingExample.price })
