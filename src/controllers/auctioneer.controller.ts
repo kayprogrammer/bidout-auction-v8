@@ -1,14 +1,13 @@
-import { Body, Controller, Get, Logger, Param, Patch, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from '../utils/responses';
-import { BidService, CategoryService, ListingService, WatchlistService } from '../../prisma/services/listings.service';
-import { BidSchema, BidsResponseSchema, ListingSchema, ListingsResponseSchema } from '../schemas/listings';
+import { BidService, CategoryService, ListingService } from '../../prisma/services/listings.service';
+import { BidResponseDataSchema, BidSchema, BidsResponseSchema, ListingSchema, ListingsResponseSchema } from '../schemas/listings';
 import { AuthGuard } from './deps';
 import { RequestError } from '../exceptions.filter';
 import { UserService } from '../../prisma/services/accounts.service';
-import { AuthService } from '../utils/auth.service';
 import { FileService } from '../../prisma/services/general.service';
-import { CreateListingResponseDataSchema, CreateListingResponseSchema, CreateListingSchema, UpdateListingSchema } from '../schemas/auctioneer';
+import { CreateListingResponseDataSchema, CreateListingResponseSchema, CreateListingSchema, ProfileDataSchema, ProfileResponseSchema, UpdateListingSchema, UpdateProfileResponseDataSchema, UpdateProfileResponseSchema, UpdateProfileSchema } from '../schemas/auctioneer';
 import { Category, FileModel } from '@prisma/client';
 import { removeKeys } from '../utils/utils';
 
@@ -19,7 +18,6 @@ import { removeKeys } from '../utils/utils';
 export class AuctioneerController {
   constructor(
     private readonly userService: UserService,
-    private readonly authService: AuthService,
     private readonly listingsService: ListingService,
     private readonly categoryService: CategoryService,
     private readonly bidsService: BidService,
@@ -128,6 +126,74 @@ export class AuctioneerController {
       'Listing updated successfully', 
       listingDict, 
       CreateListingResponseDataSchema
+    )
+  }
+
+  @Get("/listings/:slug/bids")
+  @ApiOperation({ summary: 'Retrieve all bids in a listing (current user)', description: "This endpoint retrieves all bids in a particular listing by the current user." })
+  @ApiResponse({ status: 200, type: BidsResponseSchema })
+  async retrieveAuctioneerListingBids(@Req() req: any, @Param("slug") slug: string): Promise<BidsResponseSchema> {
+    const auctioneer = req.user
+    const listing = await this.listingsService.getBySlug(slug);
+    if (!listing) throw new RequestError('Listing does not exist!', 404);
+    if (listing.auctioneerId !== auctioneer.id) throw new RequestError("This listing doesn't belong to you!");
+
+    const bids = await this.bidsService.getByListingId(listing.id)
+
+    // Return response
+    return Response(
+      BidsResponseSchema, 
+      'Listing Bids fetched', 
+      {listing: listing.name, bids}, 
+      BidResponseDataSchema
+    )
+  }
+
+  @Get("")
+  @ApiOperation({ summary: 'Get Profile', description: "This endpoint gets the current user's profile." })
+  @ApiResponse({ status: 200, type: ProfileResponseSchema })
+  async retrieveProfile(@Req() req: any): Promise<ProfileResponseSchema> {
+    // Return response
+    return Response(
+      ProfileResponseSchema, 
+      'User details fetched!', 
+      req.user, 
+      ProfileDataSchema
+    )
+  }
+
+  @Put("")
+  @ApiOperation({ summary: 'Update Profile', description: "This endpoint updates an authenticated user's profile. Note: Use the returned file_upload_data to upload avatar to cloudinary" })
+  @ApiResponse({ status: 200, type: UpdateProfileResponseSchema })
+  async updateProfile(@Req() req: any, @Body() data: UpdateProfileSchema): Promise<UpdateProfileResponseSchema> {
+    let user = req.user
+    let dataToUpdate: Record<string,any> = { ...data }
+    const fileType = data.fileType
+    if(fileType) {
+      let file: FileModel
+      if(user.avatarId) {
+        file = await this.fileService.update({id: user.avatarId, resourceType: fileType})
+      } else {
+        file = await this.fileService.create({resourceType: fileType})
+      }
+      dataToUpdate = removeKeys(dataToUpdate, "fileType")
+      dataToUpdate.avatarId = file.id
+    }
+
+    // Update user profile
+    dataToUpdate.id = user.id
+    user = await this.userService.update(dataToUpdate)
+    const userDict: Record<string,any> = { ...user }
+
+    userDict.fileUpload = false
+    if (fileType) userDict.fileUpload = true
+
+    // Return response
+    return Response(
+      UpdateProfileResponseSchema, 
+      'User updated!', 
+      userDict, 
+      UpdateProfileResponseDataSchema
     )
   }
 }

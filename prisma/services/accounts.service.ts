@@ -17,7 +17,7 @@ export class UserService {
     constructor(private prisma: PrismaService) { }
 
     async getById(id: string): Promise<User | null> {
-        const user: User | null = await this.prisma.user.findFirst({ where: {id} });
+        const user: User | null = await this.prisma.user.findFirst({ where: {id}, include: {avatar: true} });
         return user
     }
 

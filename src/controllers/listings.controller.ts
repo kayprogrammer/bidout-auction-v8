@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Query, Req, Res, UseGuards } from '
 import { ApiTags, ApiResponse, ApiOperation, ApiQuery, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { Response } from '../utils/responses';
 import { BidService, CategoryService, ListingService, WatchlistService } from '../../prisma/services/listings.service';
-import { AddListingToWatchlistResponseSchema, AddListingToWatchlistSchema, BidResponseSchema, BidSchema, BidsResponseSchema, CategoriesResponseSchema, CategorySchema, CreateBidSchema, ListingResponseDetailDataSchema, ListingResponseSchema, ListingSchema, ListingsResponseSchema } from '../schemas/listings';
+import { AddListingToWatchlistResponseSchema, AddListingToWatchlistSchema, BidResponseDataSchema, BidResponseSchema, BidSchema, BidsResponseSchema, CategoriesResponseSchema, CategorySchema, CreateBidSchema, ListingResponseDetailDataSchema, ListingResponseSchema, ListingSchema, ListingsResponseSchema } from '../schemas/listings';
 import { AuthGuard, ClientGuard } from './deps';
 import { RequestError } from '../exceptions.filter';
 import { UserService } from '../../prisma/services/accounts.service';
@@ -164,8 +164,8 @@ export class ListingController {
     return Response(
       BidsResponseSchema, 
       'Listing Bids fetched', 
-      bids, 
-      BidSchema
+      {listing: listing.name, bids}, 
+      BidResponseDataSchema
     )
   }
 

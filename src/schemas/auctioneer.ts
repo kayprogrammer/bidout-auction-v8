@@ -99,29 +99,35 @@ export class CreateListingResponseSchema extends ResponseSchema {
 // PROFILE SCHEMAS
 
 export class ProfileDataSchema {
+    @Expose()
     @ApiProperty({ example: userExample.firstName })
     firstName: string
 
+    @Expose()
     @ApiProperty({ example: userExample.lastName })
     lastName: string
 
+    @Expose()
     @ApiProperty({ example: userExample.avatar })
+    @Transform(({ value, key, obj, type }) => FileProcessor.generateFileUrl(obj.avatar, "avatars"))
     avatar: string
 } 
 
 export class UpdateProfileSchema {
     @IsString()
     @MaxLength(50)
-    @ApiProperty({ example: userExample.firstName })
+    @ApiProperty({ name: "first_name", example: userExample.firstName })
     firstName: string
 
     @IsString()
     @MaxLength(50)
-    @ApiProperty({ example: userExample.lastName })
+    @ApiProperty({ name: "last_name", example: userExample.lastName })
     lastName: string
 
+    @IsOptional()
     @IsString()
-    @ApiProperty({ example: fileTypeExample })
+    @IsIn(Object.keys(ALLOWED_IMAGE_TYPES), {message: "Invalid Image type"})
+    @ApiProperty({ name: "file_type", example: fileTypeExample })
     fileType: string
 }
 
@@ -131,6 +137,9 @@ export class ProfileResponseSchema extends ResponseSchema {
 }
 
 export class UpdateProfileResponseDataSchema extends ProfileDataSchema {
+    @Exclude()
+    avatar: string
+
     @ApiProperty({ name: "file_upload_data", example: fileUploadDataExample })
     @Transform(({ value, key, obj, type }) => obj.fileUpload ? FileProcessor.generateFileSignature("avatars", obj.avatarId): null)
     @Expose()

@@ -152,9 +152,20 @@ export class AddListingToWatchlistResponseSchema extends ResponseSchema {
     data: Record<string,any>;
 }
 
-export class BidsResponseSchema extends ResponseSchema {
+export class BidResponseDataSchema {
+    @Expose()
+    @ApiProperty({ example: listingExample.name })
+    listing: string
+
     @ApiProperty({ type: BidSchema, isArray: true })
-    data: BidSchema[];
+    @Expose()
+    @Type(() => BidSchema)
+    bids: BidSchema[];
+}
+
+export class BidsResponseSchema extends ResponseSchema {
+    @ApiProperty({ type: BidResponseDataSchema })
+    data: BidResponseDataSchema;
 }
 
 export class BidResponseSchema extends ResponseSchema {
