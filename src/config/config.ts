@@ -25,7 +25,7 @@ class Configuration {
     public mailSenderHost: string;
     public mailSenderPort: number;
     public mailFromName: string;
-    public corsAllowedOrigins: string;
+    public corsAllowedOrigins: string[];
     public cloudinaryCloudName: string;
     public cloudinaryApiKey: string;
     public cloudinaryApiSecret: string;
@@ -59,7 +59,7 @@ class Configuration {
       this.mailSenderHost = process.env.MAIL_SENDER_HOST || '';
       this.mailSenderPort = parseInt(process.env.MAIL_SENDER_PORT || '0');
       this.mailFromName = process.env.MAIL_FROM_NAME || '';
-      this.corsAllowedOrigins = process.env.CORS_ALLOWED_ORIGINS || '';
+      this.corsAllowedOrigins = process.env.CORS_ALLOWED_ORIGINS?.split(" ") || [];
       this.cloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME || '';
       this.cloudinaryApiKey = process.env.CLOUDINARY_API_KEY || '';
       this.cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET || '';

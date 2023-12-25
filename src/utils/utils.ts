@@ -54,6 +54,15 @@ export const removeKeys = (data: Record<string, any>, ...keysToRemove: string[])
     return newData
 }
 
+export const removeNullValues = (data: Record<string, any>) => {
+    Object.keys(data).forEach(key => {
+        if (data[key] === null) {
+          delete data[key];
+        }
+    })
+    return data
+}
+
 export const convertDateToUTC = (date: Date): Date => { 
     return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds())
 }

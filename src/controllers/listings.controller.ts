@@ -43,7 +43,7 @@ export class ListingController {
   async retrieveListingDetail(@Param("slug") slug: string): Promise<ListingResponseSchema> {
     const listing = await this.listingsService.getBySlug(slug);
     if (!listing) throw new RequestError('Listing does not exist!', 404);
-    const relatedListings = await this.listingsService.getRelatedListings(listing.categoryId as string, slug)
+    const relatedListings = await this.listingsService.getRelatedListings(listing.categoryId as string, slug, 3)
     // Return response
     return Response(
         ListingResponseSchema, 

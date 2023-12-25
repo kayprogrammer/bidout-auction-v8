@@ -26,8 +26,8 @@ export class FileProcessor {
             key = `${BASE_FOLDER}${folder}/${key}`
             const timestamp = Math.round((new Date).getTime() / 1000);
             const params = {
-                "public_id": key,
-                "timestamp": timestamp,
+                public_id: key,
+                timestamp: timestamp,
             }
             try {
                 const signature = cloudinary.utils.api_sign_request(params, settings.cloudinaryApiSecret)
@@ -45,7 +45,9 @@ export class FileProcessor {
             const key = `${BASE_FOLDER}${folder}/${fileObj.id}${fileExtension}`
 
             try {
-                const url = cloudinary.url(key)
+                const timestamp = new Date().getTime();
+
+                const url = cloudinary.url(key, { version: timestamp })
                 return url
             } catch (e: any) {
                 Logger.error(`Error generating url for ${key}: ${e}`)

@@ -1,15 +1,15 @@
-import { Body, Controller, Get, Logger, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from '../utils/responses';
 import { BidService, CategoryService, ListingService } from '../../prisma/services/listings.service';
-import { BidResponseDataSchema, BidSchema, BidsResponseSchema, ListingSchema, ListingsResponseSchema } from '../schemas/listings';
+import { BidResponseDataSchema, BidsResponseSchema, ListingSchema, ListingsResponseSchema } from '../schemas/listings';
 import { AuthGuard } from './deps';
 import { RequestError } from '../exceptions.filter';
 import { UserService } from '../../prisma/services/accounts.service';
 import { FileService } from '../../prisma/services/general.service';
 import { CreateListingResponseDataSchema, CreateListingResponseSchema, CreateListingSchema, ProfileDataSchema, ProfileResponseSchema, UpdateListingSchema, UpdateProfileResponseDataSchema, UpdateProfileResponseSchema, UpdateProfileSchema } from '../schemas/auctioneer';
 import { Category, FileModel } from '@prisma/client';
-import { removeKeys } from '../utils/utils';
+import { removeKeys, removeNullValues } from '../utils/utils';
 
 @Controller('api/v8/auctioneer')
 @ApiTags('Auctioneer')
@@ -86,7 +86,7 @@ export class AuctioneerController {
     let categorySlug = data.category
     let category: Category | null
 
-    let dataToUpdate: Record<string,any> = { ...data }
+    let dataToUpdate: Record<string,any> = removeNullValues(data)
 
     if(categorySlug) {
       if(categorySlug !== "other") {
@@ -167,7 +167,7 @@ export class AuctioneerController {
   @ApiResponse({ status: 200, type: UpdateProfileResponseSchema })
   async updateProfile(@Req() req: any, @Body() data: UpdateProfileSchema): Promise<UpdateProfileResponseSchema> {
     let user = req.user
-    let dataToUpdate: Record<string,any> = { ...data }
+    let dataToUpdate: Record<string,any> = removeNullValues(data)
     const fileType = data.fileType
     if(fileType) {
       let file: FileModel

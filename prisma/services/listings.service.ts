@@ -185,9 +185,9 @@ export class ListingService {
         return listing
     }
 
-    async getRelatedListings(categoryId: string, slug: string): Promise<Listing[]> {
+    async getRelatedListings(categoryId: string, slug: string, quantity: number): Promise<Listing[]> {
         let listings: Listing[] = await this.prisma.listing.findMany(
-            { where: { categoryId, NOT: { slug } }, include: {category: true, auctioneer: true, image: true} }
+            { where: { categoryId, NOT: { slug } }, orderBy: { createdAt: 'desc' }, include: {category: true, auctioneer: true, image: true}, take: quantity }
         );
         return listings
     }

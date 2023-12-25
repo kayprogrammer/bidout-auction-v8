@@ -10,10 +10,17 @@ declare const module: any;
 async function bootstrap() {
   dotenv.config();
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: settings.corsAllowedOrigins,
+    methods: ["GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"],
+    credentials: true,
+    allowedHeaders: ["origin", "content-type", "accept", "authorization", "x-request-id", "guestuserid"]
+  });
 
   // Validation pipes to return the errors full detail
   app.useGlobalPipes(
     new ValidationPipe({
+      whitelist: true,
       transform: true,
       exceptionFactory: (errors) => {
         return new UnprocessableEntityException({
