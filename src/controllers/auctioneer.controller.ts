@@ -9,7 +9,7 @@ import { UserService } from '../../prisma/services/accounts.service';
 import { AuthService } from '../utils/auth.service';
 import { FileService } from '../../prisma/services/general.service';
 import { CreateListingResponseDataSchema, CreateListingResponseSchema, CreateListingSchema, UpdateListingSchema } from '../schemas/auctioneer';
-import { Category } from '@prisma/client';
+import { Category, FileModel } from '@prisma/client';
 import { removeKeys } from '../utils/utils';
 
 @Controller('api/v8/auctioneer')
@@ -82,36 +82,51 @@ export class AuctioneerController {
   @ApiResponse({ status: 200, type: CreateListingResponseSchema })
   async updateListing(@Req() req: any, @Param("slug") slug: string, @Body() data: UpdateListingSchema): Promise<CreateListingResponseSchema> {
     const auctioneer = req.user
-    const listing = await this.listingsService.getBySlug(slug);
+    let listing = await this.listingsService.getBySlug(slug);
     if (!listing) throw new RequestError('Listing does not exist!', 404);
     if (auctioneer.id !== listing.auctioneerId) throw new RequestError("This listing doesn't belong to you!");
-    Logger.log(data)
-    // let categorySlug = data.category
-    // let category: Category | null
+    let categorySlug = data.category
+    let category: Category | null
 
-    // if(categorySlug !== "other") {
-    //   category = await this.categoryService.getBySlug(categorySlug)
-    //   if (!category) throw new RequestError("Invalid Entry", 422, {category: "Invalid Category"})
-    // } else {
-    //   category = null
-    // }
+    let dataToUpdate: Record<string,any> = { ...data }
 
-    // // Create File Object
-    // const file = await this.fileService.create({resourceType: data.fileType})
+    if(categorySlug) {
+      if(categorySlug !== "other") {
+        category = await this.categoryService.getBySlug(categorySlug)
+        if (!category) throw new RequestError("Invalid Entry", 422, {category: "Invalid Category"})
+      } else {
+        category = null
+      }
+      dataToUpdate = removeKeys(data, "category")
+      dataToUpdate.categoryId = null
+      if (category) dataToUpdate.categoryId = category.id
+    }
 
-    // // Create listing
-    // const dataToCreate = removeKeys(data, "category", "fileType")
-    // dataToCreate.imageId = file.id
-    // dataToCreate.auctioneerId = auctioneer.id
-    // dataToCreate.categoryId = null
-    // if (category) dataToCreate.categoryId = category.id
-    // const listing = await this.listingsService.create(dataToCreate)
- 
+    const fileType = data.fileType
+    if(fileType) {
+      let file: FileModel
+      if(listing.imageId) {
+        file = await this.fileService.update({id: listing.imageId, resourceType: fileType})
+      } else {
+        file = await this.fileService.create({resourceType: fileType})
+      }
+      dataToUpdate = removeKeys(dataToUpdate, "fileType")
+      dataToUpdate.imageId = file.id
+    }
+
+    // Update listing
+    dataToUpdate.id = listing.id
+    listing = await this.listingsService.update(dataToUpdate)
+    const listingDict: Record<string,any> = { ...listing }
+
+    listingDict.fileUpload = false
+    if (fileType) listingDict.fileUpload = true
+
     // Return response
     return Response(
       CreateListingResponseSchema, 
-      'Listing created successfully', 
-      listing, 
+      'Listing updated successfully', 
+      listingDict, 
       CreateListingResponseDataSchema
     )
   }

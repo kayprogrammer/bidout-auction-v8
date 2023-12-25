@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { Prisma } from "@prisma/client"
-import { IsBoolean, IsDateString, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, Min } from "class-validator"
+import { IsBoolean, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, Min } from "class-validator"
 import { fileTypeExample, fileUploadDataExample, listingExample, userExample } from "./schema_examples"
 import { ListingSchema } from "./listings"
 import { ResponseSchema } from "./base"
@@ -68,7 +68,7 @@ export class UpdateListingSchema {
 
     @IsOptional()
     @IsString()
-    @IsIn(Object.keys(ALLOWED_IMAGE_TYPES))
+    @IsIn(Object.keys(ALLOWED_IMAGE_TYPES), {message: "Invalid Image type"})
     @ApiProperty({ name: "file_type", example: fileTypeExample })
     fileType: string
 
@@ -86,7 +86,7 @@ export class CreateListingResponseDataSchema extends ListingSchema {
     image: string
 
     @ApiProperty({ name: "file_upload_data", example: fileUploadDataExample })
-    @Transform(({ value, key, obj, type }) => FileProcessor.generateFileSignature("listings", obj.imageId))
+    @Transform(({ value, key, obj, type }) => obj.fileUpload ? FileProcessor.generateFileSignature("listings", obj.imageId): null)
     @Expose()
     fileUploadData: Record<string,any>
 }
@@ -132,7 +132,7 @@ export class ProfileResponseSchema extends ResponseSchema {
 
 export class UpdateProfileResponseDataSchema extends ProfileDataSchema {
     @ApiProperty({ name: "file_upload_data", example: fileUploadDataExample })
-    @Transform(({ value, key, obj, type }) => FileProcessor.generateFileSignature("avatars", obj.avatarId))
+    @Transform(({ value, key, obj, type }) => obj.fileUpload ? FileProcessor.generateFileSignature("avatars", obj.avatarId): null)
     @Expose()
     fileUploadData: Record<string,any>
 }

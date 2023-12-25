@@ -95,6 +95,10 @@ export class FileService {
         await this.prisma.fileModel.createMany({data: data as any})
     }
 
+    async update(data: Record<string,any>): Promise<FileModel> {
+        return await this.prisma.fileModel.update({ where: { id: data.id }, data: data})
+    }
+
     async testFile(): Promise<FileModel> {
         const file =  await this.prisma.fileModel.create({ data: {resourceType: "image/jpeg"} })
         return file
