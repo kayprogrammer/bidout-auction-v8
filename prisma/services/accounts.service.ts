@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../src/prisma.service';
 import { GuestUser, Otp, Prisma, User } from '@prisma/client';
 import { hashPassword } from '../../src/utils/utils';
@@ -55,11 +55,13 @@ export class UserService {
         return guestUser
     }
 
+    async deleteGuest(id: string) {
+        await this.prisma.guestUser.delete({ where: {id} })
+    }
+
     async getOrCreateGuestUser(id: string): Promise<GuestUser> {
         let guestUser: GuestUser | null = await this.getGuestUserById(id)
-        Logger.log(id)
         if (!guestUser) {
-
             guestUser = await this.prisma.guestUser.create({data: {}})
         }
         return guestUser

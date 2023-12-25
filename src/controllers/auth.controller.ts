@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiResponse, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiResponse, ApiOperation, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { OtpService, UserService } from '../../prisma/services/accounts.service';
 import { SubscriberSchema } from '../schemas/general';
 import { Response } from '../utils/responses';
@@ -10,7 +10,9 @@ import { InjectQueue } from '@nestjs/bull';
 import { ResponseSchema } from '../schemas/base';
 import { checkPassword } from '../utils/utils';
 import { AuthService } from '../utils/auth.service';
-import { AuthGuard } from './deps';
+import { AuthGuard, ClientGuard } from './deps';
+import { WatchlistService } from '../../prisma/services/listings.service';
+import { Watchlist } from '@prisma/client';
 
 @Controller('api/v8/auth')
 @ApiTags('Auth')
@@ -19,6 +21,7 @@ export class AuthController {
     private readonly userService: UserService,
     private readonly otpService: OtpService,
     private readonly authService: AuthService,
+    private readonly watchlistService: WatchlistService,
 
     @InjectQueue('email') private readonly emailSender: Queue
   ) { }
@@ -174,7 +177,12 @@ export class AuthController {
   @Post("/login")
   @ApiOperation({ summary: "Login User", description: "This endpoint generates new access and refresh tokens for authentication" })
   @ApiResponse({ status: 201, type: LoginResponseSchema })
-  async login(@Body() data: LoginSchema): Promise<LoginResponseSchema> {
+  @ApiSecurity("GuestUserId")
+  @UseGuards(ClientGuard)
+  async login(@Req() req: any, @Body() data: LoginSchema): Promise<LoginResponseSchema> {
+    const client = req.client
+    const clientId = client.id
+
     // Validate credentials
     let user = await this.userService.getByEmail(data.email)
     if (!user || !(await checkPassword(data.password, user.password))) throw new RequestError('Invalid credentials', 401);
@@ -185,6 +193,19 @@ export class AuthController {
     const access = this.authService.createAccessToken({userId: user.id})
     const refresh = this.authService.createRefreshToken() 
     user = await this.userService.update({id: user.id, access: access, refresh: refresh})
+
+    // Move all guest user watchlists to the authenticated user watchlists
+    const guestUserWatchlists = await this.watchlistService.getBySessionKey(
+      clientId ? clientId : null, user.id
+    )
+    if(guestUserWatchlists.length > 0){
+        const dataToCreate = guestUserWatchlists.map((watchlist: Watchlist) => {
+          return {"userId": user?.id, "listingId": watchlist.listingId}
+        })
+        await this.watchlistService.bulkCreate(dataToCreate)
+      }
+      
+    if (!client.isAuthenticated && clientId) await this.userService.deleteGuest(client.id) // Delete client (Almost like clearing sessions)
 
     // Return response
     return Response(

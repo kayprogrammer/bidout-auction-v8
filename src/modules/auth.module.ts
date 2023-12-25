@@ -5,6 +5,7 @@ import { AuthController } from '../controllers/auth.controller';
 import { EmailSender } from '../utils/emails.service';
 import { BullModule } from '@nestjs/bull';
 import { AuthService } from '../utils/auth.service';
+import { WatchlistService } from '../../prisma/services/listings.service';
 
 @Module({
   imports: [
@@ -13,6 +14,6 @@ import { AuthService } from '../utils/auth.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [UserService, EmailSender, OtpService, AuthService, PrismaService]
+  providers: [UserService, EmailSender, OtpService, AuthService, WatchlistService, PrismaService]
 })
 export class AuthModule { }

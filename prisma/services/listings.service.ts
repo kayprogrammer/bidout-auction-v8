@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../src/prisma.service';
-import { Bid, Category, Listing, Prisma, User, Watchlist, FileModel } from '@prisma/client';
+import { Bid, Category, Listing, Prisma, Watchlist } from '@prisma/client';
 import { randomStr, slugify } from '../../src/utils/utils';
 import { UUID } from 'crypto';
 import { UserService } from './accounts.service';
@@ -70,7 +70,7 @@ export class WatchlistService {
         return watchlist
     }
 
-    async getBySessionKey(sessionKey: UUID, userId: UUID): Promise<{ listingId: string; }[]> {
+    async getBySessionKey(sessionKey: string, userId: string): Promise<{ listingId: string; }[]> {
         const excludedListingIds = await this.prisma.watchlist.findMany({
             where: {
                 user: {
@@ -141,6 +141,10 @@ export class WatchlistService {
         } else {
             return await this.prisma.watchlist.create({ data: data as any })
         }
+    }
+
+    async bulkCreate(data: any): Promise<any> {
+        await this.prisma.watchlist.createMany({data, skipDuplicates: true})
     }
 
     async delete(id: string) {
