@@ -135,6 +135,21 @@ describe('AuctioneerController', () => {
         expect(respBody.data.bids).toHaveLength(1);
     });
 
+    it('Should return current user profile', async () => {
+        // Test
+        const user = await userService.testVerifiedUser()
+        const result = await authTestGet(api, `/auctioneer`, authService, userService, user);
+        expect(result.statusCode).toBe(200)
+        const respBody = result.body
+        expect(respBody).toHaveProperty("status", "success"); 
+        expect(respBody).toHaveProperty('message', 'User details fetched!');
+        expect(respBody).toHaveProperty("data", {
+            first_name: user.firstName,
+            last_name: user.lastName,
+            avatar: null
+        });
+    });
+
     afterAll(async () => {
         await teardownServer();
     });
