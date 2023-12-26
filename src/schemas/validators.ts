@@ -1,5 +1,5 @@
 import { registerDecorator, ValidationOptions, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
-import { convertDateToUTC } from 'src/utils/utils';
+import { convertDateToUTC } from '../utils/utils';
 
 @ValidatorConstraint({ name: 'isUtcDateTimeValid', async: false })
 export class IsUtcDateTimeValidConstraint implements ValidatorConstraintInterface {

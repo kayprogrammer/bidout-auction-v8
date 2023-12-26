@@ -175,7 +175,8 @@ describe('ListingsController', () => {
     const respBody = result.body
     expect(respBody).toHaveProperty('status', 'success');
     expect(respBody).toHaveProperty('message', 'Listing Bids fetched');
-    expect(respBody.data).toHaveLength(1);
+    expect(respBody.data).toHaveProperty("listing", listing.name);
+    expect(respBody.data.bids).toHaveLength(1);
   });
 
   it('Should add bid to a listing', async () => {
@@ -196,6 +197,7 @@ describe('ListingsController', () => {
     expect(respBody).toHaveProperty("data", {
       id: expect.anything(),
       user: {
+        id: user.id,
         avatar: null,
         name: UserService.fullName(user)
       },
