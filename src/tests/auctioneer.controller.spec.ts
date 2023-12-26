@@ -117,6 +117,24 @@ describe('AuctioneerController', () => {
         // You can test for the error responses yourself. I don tire...
     });
 
+    it('Should return listing bids by the current user', async () => {
+        // Create Listing
+        const listing = (await listingService.testListing()).listing
+        const anotherUser = await userService.testAnotherVerifiedUser()
+        const bid = await bidService.create(0, {userId: anotherUser.id, listingId: listing.id, amount: 20000})
+        
+
+        // Test
+        const user = await userService.testVerifiedUser()
+        const result = await authTestGet(api, `/auctioneer/listings/${listing.slug}/bids`, authService, userService, user);
+        expect(result.statusCode).toBe(200)
+        const respBody = result.body
+        expect(respBody).toHaveProperty("status", "success"); 
+        expect(respBody).toHaveProperty('message', 'Listing Bids fetched');
+        expect(respBody.data).toHaveProperty("listing", listing.name);
+        expect(respBody.data.bids).toHaveLength(1);
+    });
+
     afterAll(async () => {
         await teardownServer();
     });
