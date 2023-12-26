@@ -4,7 +4,7 @@ import { UserService } from "../../prisma/services/accounts.service";
 import { PrismaService } from "../prisma.service";
 import { BidService, CategoryService, ListingService, WatchlistService } from "../../prisma/services/listings.service";
 import { AuthService } from "../utils/auth.service";
-import { authTestGet, authTestPatch, authTestPost } from "./utils";
+import { authTestGet, authTestPatch, authTestPost, authTestPut } from "./utils";
 import { FileService } from "../../prisma/services/general.service";
 import { AuctioneerModule } from "../modules/auctioneer.module";
 import { error } from "console";
@@ -147,6 +147,28 @@ describe('AuctioneerController', () => {
             first_name: user.firstName,
             last_name: user.lastName,
             avatar: null
+        });
+    });
+
+    it('Should update current user profile', async () => {
+        const userDict = {
+            firstName: "TestFirstNameUpdated",
+            lastName: "TestLastNameUpdated",
+        }
+    
+        // Test
+        const user = await userService.testVerifiedUser();
+        let result = await authTestPut(api, `/auctioneer`, authService, userService, user, userDict);
+        
+        // Assertions
+        expect(result.statusCode).toBe(200);
+        let respBody = result.body
+        expect(respBody).toHaveProperty('status', 'success');
+        expect(respBody).toHaveProperty('message', 'User updated!');
+        expect(respBody).toHaveProperty("data", {
+            first_name: userDict.firstName,
+            last_name: userDict.lastName,
+            file_upload_data: null
         });
     });
 
