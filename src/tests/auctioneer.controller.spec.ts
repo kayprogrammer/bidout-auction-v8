@@ -4,7 +4,7 @@ import { UserService } from "../../prisma/services/accounts.service";
 import { PrismaService } from "../prisma.service";
 import { BidService, CategoryService, ListingService, WatchlistService } from "../../prisma/services/listings.service";
 import { AuthService } from "../utils/auth.service";
-import { authTestGet, authTestPost } from "./utils";
+import { authTestGet, authTestPatch, authTestPost } from "./utils";
 import { FileService } from "../../prisma/services/general.service";
 import { AuctioneerModule } from "../modules/auctioneer.module";
 import { error } from "console";
@@ -83,6 +83,38 @@ describe('AuctioneerController', () => {
         respBody = result.body
         expect(respBody).toHaveProperty('message', 'Invalid Entry');
         expect(respBody.data).toHaveProperty('category', 'Invalid Category');
+    });
+
+    it('Should update a listing', async () => {
+        const listing = (await listingService.testListing()).listing
+        const listingDict = {
+            name: "Test Listing",
+            desc: "Test description",
+            price: 2000.00,
+        }
+    
+        // Test
+        const user = await userService.testVerifiedUser();
+        let result = await authTestPatch(api, `/auctioneer/listings/${listing.slug}`, authService, userService, user, listingDict);
+        
+        // Assertions
+        expect(result.statusCode).toBe(200);
+        let respBody = result.body
+        expect(respBody).toHaveProperty('status', 'success');
+        expect(respBody).toHaveProperty('message', 'Listing updated successfully');
+        for (const key of listingsExpectedKeys) {
+            expect(Object.keys(respBody.data)).toContain(key);
+        }
+
+        // Test if error is returned because of invalid listing slug
+        result = await authTestPatch(api, `/auctioneer/listings/invalid-slug`, authService, userService, user, listingDict);
+        
+        // Assertions
+        expect(result.statusCode).toBe(404);
+        respBody = result.body
+        expect(respBody).toHaveProperty('message', 'Listing does not exist!');
+
+        // You can test for the error responses yourself. I don tire...
     });
 
     afterAll(async () => {

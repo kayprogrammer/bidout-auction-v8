@@ -38,3 +38,27 @@ export const authTestPost = async (
     const access = await setAuth(authService, userService, user)
     return api.post(`/api/v8${endpoint}`).set("authorization", `Bearer ${access}`).send(data)
 };
+
+export const authTestPatch = async (
+    api: supertest.SuperTest<supertest.Test>, 
+    endpoint: string,
+    authService: AuthService, 
+    userService: UserService, 
+    user: Record<string,any>,
+    data: Record<string,any>
+): Promise<supertest.Test> => {
+    const access = await setAuth(authService, userService, user)
+    return api.patch(`/api/v8${endpoint}`).set("authorization", `Bearer ${access}`).send(data)
+};
+
+export const authTestPut = async (
+    api: supertest.SuperTest<supertest.Test>, 
+    endpoint: string,
+    authService: AuthService, 
+    userService: UserService, 
+    user: Record<string,any>,
+    data: Record<string,any>
+): Promise<supertest.Test> => {
+    const access = await setAuth(authService, userService, user)
+    return api.put(`/api/v8${endpoint}`).set("authorization", `Bearer ${access}`).send(data)
+};
