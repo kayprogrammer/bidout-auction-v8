@@ -7,7 +7,6 @@ import { AuthService } from "../utils/auth.service";
 import { authTestGet, authTestPatch, authTestPost, authTestPut } from "./utils";
 import { FileService } from "../../prisma/services/general.service";
 import { AuctioneerModule } from "../modules/auctioneer.module";
-import { error } from "console";
 const listingsExpectedKeys: string[] = ["name", "auctioneer", "slug", "desc", "category", "price", "closing_date", "time_left_seconds", "active", "bids_count", "highest_bid", "file_upload_data"];
 
 describe('AuctioneerController', () => {
