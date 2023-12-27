@@ -8,6 +8,8 @@ RUN npm install
 
 COPY . .
 
-RUN npm run build
+COPY ./src/initials ./initials
 
-CMD [ "npm", "run", "start:dev" ]
+RUN chmod +x ./initials/initials.sh
+
+CMD ["bash", "./initials/initials.sh"]
