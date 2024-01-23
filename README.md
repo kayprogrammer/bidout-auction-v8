@@ -8,6 +8,8 @@
 
 #### PG ADMIN: [Documentation](https://pgadmin.org)
 
+#### Swagger: [Documentation](https://swagger.io/docs/)
+
 ## How to run locally
 
 - Download this repo or run:
@@ -60,7 +62,9 @@ OR
     $ make tests
 ```
 
-## Docs [Live Url](https://bidout-nestjs-api.vercel.app)
+## Docs
+#### SWAGGER API Url: [BidOut Docs](https://bidout-nestjs-api.vercel.app/)
+#### POSTMAN API Url: [BidOut Docs](https://bit.ly/bidout-api)
 
 ![alt text](https://github.com/kayprogrammer/bidout-auction-v8/blob/main/display/display1.png?raw=true)
 
